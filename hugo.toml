@@ -1,0 +1,9 @@
+baseURL = 'https://example.org/'
+languageCode = 'en-us'
+title = 'My New Hugo Site'
+theme = 'stack'
+
+[params.sidebar]
+avatar.enabled = true
+avatar.local = true
+avatar.src = "img/me.jpeg"

@@ -1,9 +1,35 @@
-baseURL = 'https://example.org/'
-languageCode = 'en-us'
-title = 'My New Hugo Site'
+baseURL = "https://chekmenev.com/"
+languageCode = "en-us"
+title = "Stanislav Chekmenev"
 theme = 'stack'
 
+[params]
+mainSections = ["posts"]
+featuredImageField = "image"
+rssFullContent = true
+favicon = "/favicon.ico"
+
 [params.sidebar]
+compact = false
+emoji = ""
+subtitle = "ML specialist & educator"
 avatar.enabled = true
 avatar.local = true
-avatar.src = "img/me.jpeg"
+avatar.src = "img/me.jpeg" 
+
+[menu]
+[[menu.main]]
+name = "Home"
+url = "/"
+weight = 1
+
+[[menu.main]]
+name = "Posts"
+url = "/posts/"
+weight = 2
+
+[[menu.main]]
+name = "About"
+url = "/about/"
+weight = 3
+

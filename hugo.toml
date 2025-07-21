@@ -9,6 +9,9 @@ featuredImageField = "image"
 rssFullContent = true
 favicon = "/favicon.ico"
 
+[params.mermaid]
+mermaid.align = "center"
+
 [params.sidebar]
 compact = false
 emoji = ""
@@ -16,6 +19,12 @@ subtitle = "ML specialist & educator"
 avatar.enabled = true
 avatar.local = true
 avatar.src = "img/me.jpeg" 
+
+
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
 
 [menu]
 [[menu.main]]

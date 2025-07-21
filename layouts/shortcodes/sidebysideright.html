@@ -1,0 +1,13 @@
+<div class="sidebyside-block">
+  <div class="sidebyside-text">
+    {{ .Inner | markdownify | safeHTML }}
+  </div>
+  <div class="sidebyside-image">
+    <figure style="margin: 0;">
+      <img src="{{ .Get "src" }}" alt="{{ .Get "alt" }}">
+      {{ with .Get "caption" }}
+        <figcaption class="sidebyside-caption">{{ . }}</figcaption>
+      {{ end }}
+    </figure>
+  </div>
+</div>

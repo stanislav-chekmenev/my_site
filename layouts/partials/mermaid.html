@@ -1,0 +1,74 @@
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+(function() {
+  /**
+   * Get the current computed CSS variable value
+   */
+  function getCSSVariable(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+
+  /**
+   * Initializes and renders Mermaid diagrams.
+   * This function is called on page load and whenever the theme changes.
+   */
+  function renderMermaid() {
+    const mermaidElements = document.querySelectorAll('.mermaid');
+    if (mermaidElements.length === 0) {
+      return;
+    }
+
+    // Restore the original Mermaid code from the data-original attribute
+    mermaidElements.forEach(el => {
+      if (!el.hasAttribute('data-original')) {
+        el.setAttribute('data-original', el.innerHTML);
+      } else {
+        el.innerHTML = el.getAttribute('data-original');
+      }
+      el.removeAttribute('data-processed');
+    });
+
+    // Get current theme colors from CSS variables
+    const themeVariables = {
+      primaryColor:       getCSSVariable('--accent-color') || '#3b82f6',
+      primaryTextColor:   getCSSVariable('--accent-color-text') || '#ffffff',
+      secondaryColor:     getCSSVariable('--card-background') || '#ffffff',
+      secondaryTextColor: getCSSVariable('--card-text-color-main') || '#374151',
+      tertiaryColor:      getCSSVariable('--body-background') || '#f9fafb',
+      tertiaryTextColor:  getCSSVariable('--body-text-color') || '#374151',
+      lineColor:          getCSSVariable('--body-text-color') || '#374151',
+      fontFamily:         getCSSVariable('--article-font-family') || 'system-ui',
+      fontSize:           '1.5rem'
+    };
+
+    // Initialize Mermaid with the current theme's resolved colors
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: 'base',
+      themeVariables: themeVariables,
+      flowchart: { curve: 'basis' }
+    });
+
+    // Render the diagrams again with the new theme
+    mermaid.run({
+        nodes: mermaidElements
+    });
+  }
+
+  // Run the initial render after the page has loaded
+  document.addEventListener('DOMContentLoaded', renderMermaid);
+
+  // Set up an observer to re-render when the theme attribute changes
+  const observer = new MutationObserver((mutations) => {
+    for (const m of mutations) {
+      if (m.attributeName === 'data-scheme') {
+        // Add a small delay to ensure CSS variables are updated
+        setTimeout(renderMermaid, 50);
+      }
+    }
+  });
+
+  observer.observe(document.documentElement, { attributes: true });
+
+})();
+</script>

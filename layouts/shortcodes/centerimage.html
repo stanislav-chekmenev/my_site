@@ -1,0 +1,10 @@
+<div class="centerimage-block">
+  {{ if .Get "caption" }}
+    <figure>
+      <img src="{{ .Get "src" }}" alt="{{ .Get "alt" | default (.Get "caption") }}" class="centerimage-img" />
+      <figcaption class="centerimage-caption">{{ .Get "caption" }}</figcaption>
+    </figure>
+  {{ else }}
+    <img src="{{ .Get "src" }}" alt="{{ .Get "alt" | default "Image" }}" class="centerimage-img" />
+  {{ end }}
+</div>

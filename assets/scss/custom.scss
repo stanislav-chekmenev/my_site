@@ -75,13 +75,13 @@
 
 /* Automatic section numbering */
 .article-content {
-  counter-reset: chapter section subsection figure;
+  counter-reset: chapter;
 }
 
 /* Chapter numbering (h2) */
 .article-content h2 {
   counter-increment: chapter;
-  counter-reset: section subsection;
+  counter-reset: section;
 }
 
 .article-content h2::before {
@@ -114,16 +114,62 @@
 }
 
 /* Figure numbering */
-.article-content figure {
+.article-content .centerimage-block,
+.article-content .sidebyside-block {
   counter-increment: figure;
 }
 
-.article-content figcaption::before,
-.article-content .sidebyside-caption::before,
-.article-content .centerimage-caption::before {
+.article-content .centerimage-caption::before,
+.article-content .sidebyside-caption::before {
   content: "Figure " counter(figure) ": ";
   font-weight: 600;
   color: var(--accent-color);
+}
+
+/* Equation numbering */
+.article-content .MathJax_Display {
+  counter-increment: equation;
+  position: relative;
+}
+
+.article-content .MathJax_Display::after {
+  content: "(" counter(equation) ")";
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.9em;
+  color: var(--body-text-color);
+  pointer-events: none;
+}
+
+/* Citation styling */
+.citation-link {
+  color: var(--accent-color);
+  text-decoration: none;
+  font-weight: 500;
+  vertical-align: super;
+  font-size: 0.75em;
+  
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+/* Back links in references */
+.back-links {
+  font-size: 0.9em;
+  color: var(--body-text-color);
+  
+  a {
+    margin-left: 0.3em;
+    color: var(--accent-color);
+    text-decoration: none;
+    
+    &:hover {
+      text-decoration: underline;
+    }
+  }
 }
 
 /* Theme-aware caption colors */
@@ -147,4 +193,3 @@
     gap: 1rem;
   }
 }
-

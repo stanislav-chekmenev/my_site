@@ -20,11 +20,21 @@ avatar.enabled = true
 avatar.local = true
 avatar.src = "img/me.jpeg" 
 
-
 [markup]
   [markup.goldmark]
     [markup.goldmark.renderer]
       unsafe = true
+    [markup.goldmark.extensions]
+      definitionList = true
+      footnote = true
+      linkify = true
+      strikethrough = true
+      table = true
+      taskList = true
+      typographer = true
+    [markup.goldmark.parser]
+      autoHeadingID = true
+      autoHeadingIDType = "github"
 
 [menu]
 [[menu.main]]
@@ -41,4 +51,29 @@ weight = 2
 name = "About"
 url = "/about/"
 weight = 3
+
+[caches]
+  [caches.getjson]
+    dir = ":cacheDir/:project"
+    maxAge = "10m"
+  [caches.getcsv]
+    dir = ":cacheDir/:project"
+    maxAge = "10m"
+  [caches.images]
+    dir = ":cacheDir/:project"
+    maxAge = "24h"
+  [caches.assets]
+    dir = ":cacheDir/:project"
+    maxAge = "24h"
+  [caches.modules]
+    dir = ":cacheDir/:project"
+    maxAge = "24h"
+
+[server]
+  [[server.headers]]
+    for = "/**"
+    [server.headers.values]
+      X-Frame-Options = "DENY"
+      X-XSS-Protection = "1; mode=block"
+      Cache-Control = "public, max-age=31536000"
 

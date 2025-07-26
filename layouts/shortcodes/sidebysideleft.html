@@ -1,4 +1,4 @@
-<div class="sidebyside-block">
+<div class="sidebyside-block" {{ with .Get "id" }}id="{{ . }}"{{ end }}>
   <div class="sidebyside-image">
     <figure style="margin: 0;">
       <img src="{{ .Get "src" }}" alt="{{ .Get "alt" }}">

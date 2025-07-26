@@ -1,4 +1,4 @@
-<div class="sidebyside-block">
+<div class="sidebyside-block" {{ with .Get "id" }}id="{{ . }}"{{ end }}>
   <div class="sidebyside-text">
     {{ .Inner | markdownify | safeHTML }}
   </div>

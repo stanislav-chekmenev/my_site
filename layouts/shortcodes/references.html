@@ -5,3 +5,29 @@
     {{ .Inner }}
   </ol>
 </div>
+
+<script>
+// Track the last clicked citation
+let lastClickedCitation = {};
+
+function setLastCitation(citationId) {
+  const refNumber = citationId.split('-')[1];
+  lastClickedCitation[refNumber] = citationId;
+}
+
+function goBackToLastCitation(refNumber) {
+  const lastCite = lastClickedCitation[refNumber];
+  if (lastCite) {
+    document.getElementById(lastCite).scrollIntoView({
+      behavior: 'smooth',
+      block: 'center'
+    });
+    // Optional: highlight the citation briefly
+    const element = document.getElementById(lastCite);
+    element.style.backgroundColor = '#ffeb3b';
+    setTimeout(() => {
+      element.style.backgroundColor = '';
+    }, 1000);
+  }
+}
+</script>

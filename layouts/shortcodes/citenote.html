@@ -1,1 +1,4 @@
-<a id="cite-{{ .Get 0 }}" href="#ref-{{ .Get 0 }}"><sup>[{{ .Get 0 }}]</sup></a>
+<a href="#ref-{{ .Get 0 }}" 
+   id="cite-{{ .Get 0 }}-{{ .Ordinal }}" 
+   class="citation-link" 
+   onclick="setLastCitation('cite-{{ .Get 0 }}-{{ .Ordinal }}')">{{ .Get 0 }}</a>

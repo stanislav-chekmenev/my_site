@@ -212,6 +212,24 @@
   counter-reset: none;
 }
 
+/* Disable autonumbering for about page */
+.about-content {
+  counter-reset: none;
+}
+
+.about-content h2::before,
+.about-content h3::before,
+.about-content h4::before {
+  content: none;
+}
+
+.about-content h2,
+.about-content h3,
+.about-content h4 {
+  counter-increment: none;
+  counter-reset: none;
+}
+
 /* Fix Recent Posts header color for dark mode */
 .article-page .article-list header h2 {
   color: var(--card-text-color-main);
@@ -256,4 +274,142 @@
 
 .contact-icon:hover svg {
   transform: scale(1.1);
+}
+
+/* CV Download Button Styling */
+.cv-download {
+  display: flex;
+  justify-content: center;
+  margin: 2rem 0;
+}
+
+.cv-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background-color: var(--accent-color);
+  color: var(--card-background);
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-l1);
+  border: 2px solid var(--accent-color);
+}
+
+.cv-button:hover {
+  background-color: var(--card-background);
+  color: var(--accent-color);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-l2);
+  text-decoration: none;
+}
+
+.cv-button svg {
+  transition: transform 0.3s ease;
+}
+
+.cv-button:hover svg {
+  transform: scale(1.1);
+}
+
+/* Timeline styling inspired by academic CVs */
+.timeline {
+  position: relative;
+  margin: 2rem 0;
+  padding-left: 0;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 120px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--accent-color);
+}
+
+.timeline-item {
+  position: relative;
+  display: flex;
+  margin-bottom: 2rem;
+  align-items: flex-start;
+  gap: 2rem;
+}
+
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: 119px;
+  top: 0.2rem;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--accent-color);
+  border: 2px solid var(--card-background);
+  box-shadow: 0 0 0 2px var(--accent-color);
+}
+
+.timeline-date {
+  flex-shrink: 0;
+  width: 100px;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--accent-color);
+  text-align: right;
+  padding-top: 0;
+  line-height: 1.2;
+}
+
+.timeline-content {
+  flex: 1;
+  margin-left: 2rem;
+}
+
+.timeline-content h4 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: var(--card-text-color-main);
+  /* Remove Stack theme decorations */
+  border-left: none !important;
+  padding-left: 0 !important;
+  position: relative;
+  line-height: 0.7;
+}
+
+.timeline-content h4::before {
+  content: none !important;
+}
+
+.timeline-content h4::after {
+  content: none !important;
+}
+
+.timeline-content p {
+  margin: 0;
+  line-height: 1.6;
+  color: var(--card-text-color-secondary);
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .timeline::before {
+    left: 80px;
+  }
+  
+  .timeline-item::before {
+    left: 79px;
+  }
+  
+  .timeline-date {
+    width: 60px;
+    font-size: 0.8rem;
+  }
+  
+  .timeline-item {
+    gap: 1rem;
+  }
 }

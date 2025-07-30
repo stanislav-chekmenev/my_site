@@ -1,0 +1,51 @@
+{{ define "body-class" }}
+    article-page
+    {{/* 
+        Enable the right sidebar if
+            - Widget different from 'TOC' is enabled
+            - TOC is enabled and not empty
+    */}}
+    {{- $HasWidgetNotTOC := false -}}
+    {{- $TOCWidgetEnabled := false -}}
+    {{- range .Site.Params.widgets.page -}}
+        {{- if ne .type "toc" -}}
+            {{ $HasWidgetNotTOC = true -}}
+        {{- else -}}
+            {{ $TOCWidgetEnabled = true -}}
+        {{- end -}}
+    {{- end -}}
+
+    {{- $TOCManuallyDisabled := eq .Params.toc false -}}
+    {{- $TOCEnabled := and (not $TOCManuallyDisabled) $TOCWidgetEnabled -}}
+    {{- $hasTOC := ge (len .TableOfContents) 100 -}}
+    {{- .Scratch.Set "TOCEnabled" (and $TOCEnabled $hasTOC) -}}
+    
+    {{- .Scratch.Set "hasWidget" (or $HasWidgetNotTOC (and $TOCEnabled $hasTOC)) -}}
+{{ end }}
+
+{{ define "main" }}
+    <article class="{{ if .Params.image }}has-image {{ end }}main-article">
+        {{ partial "article/components/header" . }}
+
+        <section class="article-content about-content">
+            {{ $wrappedTable := printf "<div class=\"table-wrapper\">${1}</div>" }}
+            {{ .Content | replaceRE "(<table>(?:.|\n)+?</table>)" $wrappedTable | safeHTML }}
+        </section>
+
+        {{ partial "article/components/footer" . }}
+
+        {{ if or .Params.math .Site.Params.article.math }}
+            {{ partialCached "article/components/math.html" . }}
+        {{ end }}
+    </article>
+
+    {{ if .Params.links }}
+        {{ partial "article/components/links" . }}
+    {{ end }}
+
+    {{ partial "article/components/related-content" . }}
+{{ end }}
+
+{{ define "right-sidebar" }}
+    {{ if .Scratch.Get "hasWidget" }}{{ partial "sidebar/right.html" (dict "Context" . "Scope" "page") }}{{ end }}
+{{ end }}

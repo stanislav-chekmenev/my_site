@@ -42,7 +42,7 @@ Over the past eight years, I've evolved from traditional data science roles into
         <div class="timeline-date">2016 - 2019</div>
         <div class="timeline-content">
             <h4>Beginning of Data Science Career</h4>
-            <p>I built predictive models for customer behavior and sales volume at two startups: HeilpflanzenWohl and Looping PowerRoom.</p>
+            <p>I built predictive models for sales forcasting and customer behavior analysis at two startups: HeilpflanzenWohl and Looping PowerRoom.</p>
         </div>
     </div>
     <div class="timeline-item">

@@ -8,14 +8,14 @@ draft = false
 
 Hi there! I'm **Stanislav Chekmenev**, an ML specialist & educator passionate about the latest advances in machine learning.
 
-I received a PhD in Particle Physics from [RWTH Aachen University](https://www.rwth-aachen.de/cms/~a/root/?lidx=1) before transitioning into the world of machine learning. My desire to work on meaningful and cutting-edge topics brought me in close contact with Reinforcement Learning, Graph Neural Networks, and Generative Models. After several years in these fields, my interests have shifted and are now focused on Geometric Deep Learning and Protein Design.
+I received a PhD in Particle Physics from <a href="https://www.rwth-aachen.de/cms/~a/root/?lidx=1">RWTH Aachen University</a> before transitioning into the world of machine learning. My desire to work on meaningful and cutting-edge topics brought me in close contact with Reinforcement Learning, Graph Neural Networks, and Generative Models. After several years in these fields, my interests have shifted and are now focused on Geometric Deep Learning and Protein Design.
 
 ## What You'll Find Here
 
 This site serves as a milestone in my ongoing transition into the fascinating world of **Bio ML**. Here, I document my exploration of advanced techniques in protein design and related areas. 
 
-- Check out my [**Posts**](/posts/) for in-depth technical articles
-- Learn more [**About**](/about/) my background and experience
+- Check out my <a href="/posts/">**posts**</a> for in-depth technical articles
+- Learn more <a href="/about/">**about**</a> my background and experience
 
 ---
 

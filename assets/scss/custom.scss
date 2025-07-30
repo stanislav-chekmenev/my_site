@@ -193,3 +193,67 @@
     gap: 1rem;
   }
 }
+
+/* Disable autonumbering for homepage */
+.homepage-content {
+  counter-reset: none;
+}
+
+.homepage-content h2::before,
+.homepage-content h3::before,
+.homepage-content h4::before {
+  content: none;
+}
+
+.homepage-content h2,
+.homepage-content h3,
+.homepage-content h4 {
+  counter-increment: none;
+  counter-reset: none;
+}
+
+/* Fix Recent Posts header color for dark mode */
+.article-page .article-list header h2 {
+  color: var(--card-text-color-main);
+}
+
+/* Contact icons styling */
+.contact-icons {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin: 2rem 0;
+}
+
+.contact-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: var(--card-background);
+  color: var(--card-text-color-main);
+  text-decoration: none;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-l1);
+  border: 2px solid transparent;
+}
+
+.contact-icon:hover {
+  background-color: var(--accent-color);
+  color: var(--card-background);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-l2);
+  border-color: var(--accent-color);
+}
+
+.contact-icon svg {
+  width: 24px;
+  height: 24px;
+  transition: transform 0.3s ease;
+}
+
+.contact-icon:hover svg {
+  transform: scale(1.1);
+}

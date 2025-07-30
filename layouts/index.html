@@ -1,0 +1,36 @@
+{{ define "body-class" }}article-page{{ end }}
+
+{{ define "main" }}
+    <article class="main-article">
+        <section class="article-content homepage-content">
+            {{ $wrappedTable := printf "<div class=\"table-wrapper\">${1}</div>" }}
+            {{ .Content | replaceRE "(<table>(?:.|\n)+?</table>)" $wrappedTable | safeHTML }}
+        </section>
+    </article>
+
+    {{- if .Site.Params.mainSections -}}
+    <section class="article-list">
+        <header>
+            <h2>Recent Posts</h2>
+        </header>
+        {{ $pages := where .Site.RegularPages "Type" "in" .Site.Params.mainSections }}
+        {{ $notHidden := where .Site.RegularPages "Params.hidden" "!=" true }}
+        {{ $filtered := ($pages | intersect $notHidden) }}
+        {{ range first 3 $filtered }}
+            {{ partial "article-list/default" . }}
+        {{ end }}
+        
+        {{ if gt (len $filtered) 3 }}
+        <footer>
+            <a href="{{ `/posts/` | relURL }}">View all posts →</a>
+        </footer>
+        {{ end }}
+    </section>
+    {{- end -}}
+
+    {{- partial "footer/footer" . -}}
+{{ end }}
+
+{{ define "right-sidebar" }}
+    {{ partial "sidebar/right.html" (dict "Context" . "Scope" "homepage") }}
+{{ end }}

@@ -8,6 +8,12 @@ draft = true
 
 # Transitioning to Bio ML: <br> My Experience Learning and Modifying FoldFlow-2
 
+<div style="text-align: center; margin: 2em 0;">
+    <img src="/img/protein_discovery/protein-generation.gif" 
+         alt="Protein generation" 
+         style="max-width: 100%; height: auto; border-radius: 8px;">
+</div>
+
 {{< toc >}}
 
 ## Introduction: Personal Motivation & the Road Ahead
@@ -50,7 +56,7 @@ The model shares and extends some of the theoretical foundations laid out in the
 
 ###  Representations of a Protein Backbone
 
-{{< sidebysideleft src="/img/protein_discovery/gly_ala_gram_schmidt.png" alt="Glycine and alanine amino acids" caption="Two amino acids are linked together. GLY - glycine, ALA - alanine. The vectors formed by two atomic bonds (shown with arrows) are used in the Gram-Schmidt algorithm to construct the initial frames for each residue. A torsion angle $\psi$ is required for correct oxygen placement." >}}
+{{< sidebysideleft src="/img/protein_discovery/gly_ala_gram_schmidt.png" alt="Glycine and alanine amino acids" caption="Two amino acids are linked together. GLY - glycine, ALA - alanine. The vectors formed by two atomic bonds (shown with arrows) are used in the Gram-Schmidt algorithm to construct the initial frames for each residue. A torsion angle $\psi$ is required for correct oxygen placement." id="fig:protein-backbone" >}}
 A backbone consists of repeated  N&mdash;C$\_{\alpha}$&mdash;C&mdash;O four heavy atoms linked together in a chain, with each set corresponding to one amino acid (residue). C$\_{\alpha}$ atom of each residue, except for glycine (GLY), is attached to a side chain that varies for each amino acid and determines its distinct chemical properties. The geometry of the backbone is determined by mapping a set of idealized local coordinates, [N$^{\star}$, C$^{\star}_{\alpha}$, C$^{\star}$, O$^{\star}$] $\in \mathbb{R^3}$ centered at <br> C$\_{\alpha}^{\star}$=(0, 0, 0), to the actual position of each residue. This mapping is performed using a rigid transformation given by an action $x$ of the <em>special Euclidean group</em> $\text{SE}(3)$ defined by 3D rotations $R$ and translations $S$. In other words, an action $x^i$ generates backbone coordinates for a residue $i$:
 {{< /sidebysideleft >}}
 
@@ -89,7 +95,7 @@ $$\langle \mathfrak{r_1}, \mathfrak{r_2} \rangle_\text{SO}(3) = \frac{1}{2} \tex
 
 where $\mathfrak{r_1}$ and $\mathfrak{r_2}$ are the elements of the Lie algebra $\mathfrak{so}(3)$.
 
-Using [eq. 3](#eq:so3-metric), the distance on $\text{SE}(3)$ can be defined as follows:
+Using [eq. 2](#eq:so3-metric), the distance on $\text{SE}(3)$ can be defined as follows:
 
 <div id="eq:se3-dist"></div>
 $$d_{\text{SE}(3)}(x_1, x_2) = \sqrt{d_{\text{SO}(3)}(r_1, r_2)^2 + d_{\mathbb{R}^3}(s_1, s_2)^2} = \sqrt{\left\| \text{log}(r_1^T r_2) \right\|_F^2 + d_{\mathbb{R}^3}(s_1, s_2)^2} \tag{3}$$
@@ -140,7 +146,7 @@ $$v = \log_{r_0}(r_1) \in T_{r_0}\text{SO}(3) \tag{7} $$
 
 In Euclidean space, it is analogous to vector subtraction between two points: for points $p$ and $q$, the log map  $\log_p(q)$ returns the vector $q-p$.
 
-{{< centerimage src="/img/protein_discovery/exp_log_maps.svg" alt="Exponential and logarithmic maps" caption="(a) Exponential map between $r_0$ and $r_1$. (b) Logarithmic map between $r_0$ and $r_1$." id="fig:exp-log-maps" >}}
+{{<centerimage src="/img/protein_discovery/exp_log_maps.svg" alt="Exponential and logarithmic maps" caption="(a) Exponential map between $r_0$ and $r_1$. (b) Logarithmic map between $r_0$ and $r_1$." id="fig:exp-log-maps">}}
 
 One of the key innovations of the paper is an efficient computation of the logarithmic and exponential maps required for the geodesic interpolant [eq. 5](#eq:geo-interpolant), avoiding their standard definitions as infinite matrix series. This method leverages the Lie group structure of SO(3). To compute $\log_{r_0}(r_1)$, a relative rotation $r_{rel} = r_1^T r_0$ is first calculated. Then $r_{rel}$ is converted to its [axis-angle representation](https://en.wikipedia.org/wiki/Axis%E2%80%93angle_representation){{<citenote 19>}} and the *hat operator* is applied to it. The hat operator maps a three-dimensional vector to a skew-symmetric matrix. Since the output of the previous step is a skew-symmetric matrix, this whole procedure yields $\mathfrak{r_1} \in \mathfrak{so}(3)$ that belongs to the Lie algebra of $\text{SO}(3)$ and, by definition, lives at the tangent space at the identity element of the group. It is possible to apply *left translation* to $\mathfrak{r_1}$ to move it to the tangent space of $r_0$. This is achieved, using left matrix multiplication by $r_0$, which produces the desired logarithmic map $\log_{r_0}(r_1)$. Similarly, the exponential map can be computed in closed form for skew-symmetric matrices, the elements of $\mathfrak{so}(3)$, using Rodrigues' formula. You can see the visualization of the steps involved in the log map computation in [fig. 4](#fig:compute-log-map).
 
@@ -158,9 +164,30 @@ Finally, I'm ready to write down the full loss of FoldFlow-2, where the translat
 <div id="eq:loss-so3"></div>
 $$ \mathcal{L} = \mathcal{L}_{\text{SO}(3)} + \mathcal{L}_{\mathbb{R}^3} = \mathbb{E}_{t \sim \mathcal{U}[0,1], q(x_0, x_1), \rho_t(x_t|x_0, x_1, \bar{a})} \left\| v_\theta(t, r_t, \bar{a}) - \log_{r_t}(r_0) / t \right\|^2_{\text{SO}(3)} + \left\| v_\theta(t, s_t, \bar{a}) - \frac{s_t - s_0}{t} \right\| ^2_2 \tag{9}$$
 
-where $t$ is sampled uniformly from $\mathcal{U}[0,1]$, $v_{\theta} \in T_{r_t}\text{SO}(3)$ is in the tangent space at $r_t$, the norm is induced by the metric on $\text{SO}(3)$ (I'll cover it in the chapter about implementation details) and $q(r_0, r_1)$ is any coupling between samples from the data and prior distributions. An optimal choice, developed in the paper, is to set $q(r_0, r_1) = \pi(r_0, r_1)$, which is a solution of the Riemannian Optimal Transport{{<citenote 7>}} problem. Let me say a couple of words about this last important aspect.
+where $t$ is sampled uniformly from $\mathcal{U}[0,1]$, $v_{\theta} \in T_{r_t}\text{SO}(3)$ is in the tangent space at $r_t$, the norm is induced by the metric on $\text{SO}(3)$ and $q(r_0, r_1)$ is any coupling between samples from the data and source distributions. 
 
- 
+### Full Training Objective 
+
+While the Conditional Flow Matching objective is central to the training, the complete loss function incorporates two additional auxiliary terms to improve predictions. These losses, inspired by the FrameDiff{{<citenote 10>}} model, operate directly on the predicted 3D atomic coordinates. 
+
+One of the auxiliary losses is the backbone atom loss $\mathcal{L}\_{bb}$ that penalizes the squared difference between the predicted backbone atom coordinates and the ground truth positions. The second one is the pairwise distance loss, $\mathcal{L}_{2D}$, between 4 heavy atoms of the residues within a local neighborhood (distance $< 6 \mathring{A}$ ). The losses are computed as follows:
+
+<div id="eq:aux-losses"></div>
+$$\mathcal{L}_{bb} = \frac{1}{4N} \sum \left|\left| A_0 - \hat{A}_0 \right|\right|^2, \quad \mathcal{L}_{2D} = \frac{\left|\left| \mathbb{1} \{ D < 6 \mathring{A} \} (D - \hat{D}) \right|\right|^2}{\sum \mathbb{1}_{D < 6 \mathring{A}} - N} \tag{10},$$
+
+where $\mathbb{1}$ is the indicator function, $A^{N \times 4 \times 3}$ is the tensor of predicted backbone atom positions, $\hat{A}$ is the ground truth, and $D^{N \times N \times 4 \times 4}$ is the tensor containing all pairwise distances between four heavy atoms $a$, $b$ of the residues $i$, $j$, i.e. $D_{ijab} = \left|\left|A_{ia} - A_{jb} \right|\right\|$.
+
+The intuition behind inclusion of these auxiliary losses is that it helps the model to produce more physically plausible proteins and decrease the number of chain breaks, as well as the amount of steric clashes. Essentially, this mechanism improves the fine-grained characteristics of protein geometry. These auxiliary losses, weighted by $\lambda_{aux} = 0.25$, are only active during the initial phase of the flow, specifically when the time variable $t < 0.25$ and the fine-grained characteristics emerge. 
+
+The complete loss function is therefore a weighted sum of the primary flow-matching objective and these conditional auxiliary losses:
+
+<div id="eq:full-loss"></div>
+$$\mathcal{L} = \mathcal{L}_{\text{SO}(3)} + \mathcal{L}_{\mathbb{R}^3} + \mathbb{1} \{ t < 0.25 \} \lambda_{aux} ( \mathcal{L}_{bb} + \mathcal{L}_{2D}) \tag{11}$$
+
+One important remark must be stated here. FoldFlow-2 introduces Reinforced FineTuning method that modifies the final loss, however, I omit it here. The reason for that is simple: the actual training code of FoldFlow-2 is still not published fully and the reinforcmenet fine-tuning part is not available. Therefore, I trained the model, using the loss of FoldFlow-1 ([eq. 11](#eq:full-loss)) and skipping the RL part all together.
+
+There is another vital detail hiding in the CFM loss formula ([eq. 9](#eq:loss-so3)). It's the way the samples $r_0$ and $r_1$ are coupled. An optimal choice, developed in the paper, is to set $q(r_0, r_1) = \pi(r_0, r_1)$, which is a solution of the Riemannian Optimal Transport{{<citenote 7>}} problem. Let me say a couple of words about this crucial aspect.
+
 ### Optimal Transport on $\text{SE}(3)$
 
 While it's possible to use any coupling between the data, $\rho_0$, and the source, $\rho_1$, distributions, e.g. $q(\rho_0, \rho_1) = \rho_0 \rho_1$, it's not guaranteed that the probability path, generated by the conditional vector field $u_t(x_t|x_0, x_1)$, would be the shortest when measured under an appropriate metric on $\text{SE}(3)$. Shorter, more optimal paths are desirable, as they lead to faster, more stable training and decreasing variance in the training objective {{<citenote 12>}}. To achieve this, FoldFlow-2 uses a mathematical approach called Optimal Transport (OT). There's a great introductory lecture on [Optimal Transport](https://www.youtube.com/watch?v=k1CeOJdQQrc&ab_channel=MLinPL){{<citenote 20>}} recorded two years ago, which would be very beneficial for deeper understanding of the subject. A python package [POT](https://pythonot.github.io/quickstart.html){{<citenote 21>}} provides an excellent starting point into OT, as well.
@@ -170,10 +197,10 @@ The goal of OT, according to [transportation theory](https://en.wikipedia.org/wi
 Formally, Optimal Transport finds the best "transport map" $\Psi$ that minimizes the overall cost of moving all the points. This is captured by the following formula:
 
 <div id="eq:ot-plan"></div>
-$$\text{OT}(\rho_0, \rho_1) = \underset{\Psi: \Psi_{\text{#} \rho_0=\rho_1} }{\text{inf}} \int_{\text{SE}(3)^N_0} \frac{1}{2} c(x, \Psi(x))^2 d\rho_0(x) \tag{10}$$
+$$\text{OT}(\rho_0, \rho_1) = \underset{\Psi: \Psi_{\text{#} \rho_0=\rho_1} }{\text{inf}} \int_{\text{SE}(3)^N_0} \frac{1}{2} c(x, \Psi(x))^2 d\rho_0(x) \tag{12}$$
 
 {{< sidebysideright src="/img/protein_discovery/monge_map.svg" alt="Optimal Transport map" caption="Optimal Transport map for two continuous distributions $\rho_0$ and $\rho_1$." >}}
-In other words, [eq. 10](#eq:ot-plan) defines the minimum possible cost, denoted $\text{OT}(\rho_0, \rho_1)$, to transform an entire data distribution of frames, corresponding to the protein residues, $\rho_0$, into the distribution $\rho_1$, following the best possible transport map, $\Psi$. It's a *pushforward map*. The notation $\Psi\_{\text{#}}\rho_0$ represents the new distribution formed by applying the map $\Psi$ to all points in the original distribution $\rho_0$. The constraint, $\Psi\_{\text{#}}\rho_0 = \rho_1$, dictates that this new, transformed distribution must be identical to the target distribution $\rho_1$. It guarantees that we reshape the entire "cloud" of starting points into the target cloud, rather than just moving points arbitrarily ([fig. 5](#fig:ot-monge-map)). The cost for moving a single point $x$ to its destination $\Psi(x)$ is determined by the cost function $c(x, \Psi(x))$, which is computed according to the geodesic distance ([eq. 3](#eq:se3-dist)) induced by the metric on $\text{SE}(3)$. The cost formulation heavily penalizes long, inefficient paths and strongly encourages the model to find the most direct transformation route on the manifold. 
+In other words, [eq. 12](#eq:ot-plan) defines the minimum possible cost, denoted $\text{OT}(\rho_0, \rho_1)$, to transform an entire data distribution of frames, corresponding to the protein residues, $\rho_0$, into the distribution $\rho_1$, following the best possible transport map, $\Psi$. It's a *pushforward map*. The notation $\Psi\_{\text{#}}\rho_0$ represents the new distribution formed by applying the map $\Psi$ to all points in the original distribution $\rho_0$. The constraint, $\Psi\_{\text{#}}\rho_0 = \rho_1$, dictates that this new, transformed distribution must be identical to the target distribution $\rho_1$. It guarantees that we reshape the entire "cloud" of starting points into the target cloud, rather than just moving points arbitrarily ([fig. 5](#fig:ot-monge-map)). The cost for moving a single point $x$ to its destination $\Psi(x)$ is determined by the cost function $c(x, \Psi(x))$, which is computed according to the geodesic distance ([eq. 3](#eq:se3-dist)) induced by the metric on $\text{SE}(3)$. The cost formulation heavily penalizes long, inefficient paths and strongly encourages the model to find the most direct transformation route on the manifold. 
 {{< /sidebysideright >}}
 
 Searching for the perfect transport map $\Psi$ for thousands of points is computationally very difficult. The paper employs a well-known shortcut. Instead of solving for $\Psi$ directly, it solves a related, more manageable problem (the Kantorovich formulation of OT) to find an optimal transport plan $\pi$, which is a joint probability distribution minimizing the cost of transporting $\rho_0$ to $\rho_1$. This plan does not define the full map but provides an efficient way to sample corresponding pairs of points $x_0$ and $x_1$. By training on these matched pairs, $(x_0, x_1)$ sampled from $\pi$, FoldFlow-2 ensures a much more efficient and stable learning process. The visual intuition of this pair sampling is presented in [Fig. 6](#fig:ot-plan-sampling) 
@@ -227,6 +254,63 @@ To wrap up this chapter, let me summarize the key aspects of FoldFlow-2 that I'v
 - Multi-modality is supported via fusing sequence and structure representations.
 - Many of its componets are inspired by the original AlphaFold-2 algorithms.
 
+## My Modification: Rationale, Approach, and Implementation
+
+Having explored the theoretical foundations and architectural components of FoldFlow-2, I now turn to my hands-on experience of modifying and extending the model to deepen my understanding of it.
+
+Rather than only studying the model inside out, I wanted to modify its components with two key objectives. First, to potentially improve performance through architectural changes, and second, to explore equivariant Graph Neural Networks that are ubiquitous in the Bio ML field. Having previously worked with GNNs, I was particularly interested in understanding how geometric inductive biases shape current SOTA models. So I thought of an SE(3)-equivariant GNN addition that could be integrated as a modular component, allowing me to easily toggle it on and off, introducing minimal disruption to the base architecture.
+
+As we've seen in the previous chapter, FoldFlow-2 uses two encoders, the structure and the sequence one. The structure encoder has the IPA algorithm at its core, which modifies the standard attention by adding the dependence on distances between residues. Even though the whole backbone update rule, as well as the full encoder block, is $\text{SE}(3)$-equivariant, the distance-based mehtod of influencing attention weights is SE(3)-invariant, since distance is just a scalar that doesn't change under group actions. Essentially, attention weights between residues $i$ and $j$ are assigned to be bigger if the residues get closer to each other. However, this technique offers limited expressivity when compared to other architectures, which leverage 3D-positional information in a more "flexible" way, by constructing features that transform under actions of $\text{SE}(3)$ equivariantly.
+
+My approach was to integrate a sophisticated SE(3)-equivariant GNN encoder that operates directly on atomic coordinates, working alongside the existing structure and sequence encoders. Drawing inspiration from the [self-conditioning technique](https://arxiv.org/abs/2208.04202){{<citenote 26>}} that has proven effective in generative modeling, I sought to enhance FoldFlow-2's existing self-conditioning mechanism. While the original implementation simply added a distogram of binned predicted relative positions to the pair representations 50% of the time, I wanted to try out a more advanced option.
+
+Since the model's predicted rigids (elements of $\text{SE}(3)$) contain backbone atom coordinates as their translation components, I designed a system where the model's own structural predictions from the previous step would be fed to the separate GNN encoder during half of the training iterations ([Fig. 10](#fig:my-architecture)). To maintain architectural simplicity, the GNN encoder outputs only single representations that are processed through the combiner module together with the embeddings from the other two encoders. This approach represents the least invasive, though reasonable, way to incorporate an additional encoder while preserving the core architecture. By conditioning on its own predictions, the model can iteratively refine its structural outputs. This strategy has been shown to significantly improve the quality of generated samples{{<citenote 26>}}.
+
+{{< centerimage src="/img/protein_discovery/my-architecture.svg" alt="Modified architecture" caption="Augmented architecture of FoldFlow-2 with an additional MACE-based structure encoder conditioned on the model's own predictions $50%$ of time." id="fig:my-architecture">}}
+
+With the overall strategy defined, the next critical choice was the specific architecture for this new SE(3)-equivariant encoder. For this role, I needed a model that could capture complex, interatomic interactions more expressively than the simple distance-based mechanisms found in the original structure encoder. The following section will introduce the selected model, the Multi-Atomic Cluster Expansion (MACE) network, and the architectural details that make it particularly well-suited for this task.
+
+### SE(3)-equivariant MACE Encoder
+
+The [MACE](https://arxiv.org/abs/2206.07697){{<citenote 27>}} architecture is a landmark example of a geometric equivariant tensor-field network. It operates with internal features that are not mere scalars but objects that transform equivariantly under the group action of $\text{SE}(3)$. Strictly speaking MACE was built for actions of the $\text{O}(3)$ group, but since we're working with relative positions, which guarantees translational invariance, the whole model is not only $\text{SE}(3)$-equivariant, but is equivariant to 3D reflections, as well. This property is achieved by representing features according to the irreducible representations of the group, ensuring equivariance and allowing for more accurate modelling of physical properties of atomic environments. The foundation of this type of architecture was firts developed in the seminal paper on [Tensor Field Networks](https://arxiv.org/abs/1802.08219){{<citenote 28>}}, which I encourage you to read if you've never encoutered this concept before. 
+
+The main ingredient to construct such internal features is to employ [spherical harmonics](https://en.wikipedia.org/wiki/Spherical_harmonics){{<citenote 29>}}, $Y_m^l: \mathbb{S}^2 \to \mathbb{R}$. These are functions defined on a sphere $\mathbb{S}^2$ which form an orthonomal basis, making it possible to decompose any function on a sphere into a linear combination of spherical harmonics. The second important quality of spherical harmonics is that they transform predictably (equivariantly) under rotations or, more formally, according to an action of irreducible representations of $\text{SO}(3)$ group called [Wigner D-matrices](https://en.wikipedia.org/wiki/Wigner_D-matrix){{<citenote 30>}} ([eq. 13](#eq:rotation-under-wigner-d)).
+
+$$ (\hat{\mathcal{R}}Y_m^l)(\mathbf{x}) = \sum_{m'=-l}^{l} Y_{m'}^l(\mathbf{x}) D^l_{m'm}(R), \tag{13}$$
+
+where $\hat{\mathcal{R}}$ is the operator that acts on functions when the coordinate system is rotated by R and $D^l_{m', m}$ are the elements of the Wigner D-matrix, the $(2l+1) \times (2l+1)$  irreducible matrix representaion of order $l$ of the rotation $R$. Therefore, building features, using spherical harmonics, would facilitate desired equivariance. Unfortunately, I can't go into more detail of this fascinating and complex topic here without deviating too much from our original focus, so I'll leave it for the future in-depth post.
+
+MACE's primary innovation, however, lies in its efficient construction of higher body order messages. Unlike traditional Message Passing Neural Networks (MPNNs), which are limited to pairwise (two-body) interactions at each layer, MACE creates messages that explicitly incorporate correlations between multiple nodes simultaneously, e.g. three- and four-body interactions. This is accomplished through a clever use of tensor products, which bypasses the typical exponential computational cost associated with higher-order terms. This ability to model interactions between several neighboring atoms simultaneously has demonstrated significant gains in sample efficiency and accuracy on a number of atomic benchmark datasets {{<citenote 27>}}. The MACE variant of many-body message passing is below:
+
+$$m_i = \sum_{j} \mathbf{u_1}(x_i; x_j) + \sum_{j_1, j_2} \mathbf{u_2}(x_i; x_{j_1}, x_{j_2}) + ... + \sum_{j_1, ..., j_{\nu}} \mathbf{u_{\nu}}(x_i; x_{j_1}, ..., x_{j_{\nu}}), \tag{14}$$
+
+where $m_i$ is the message of node $i$, $x$ are the features of the nodes, $\mathbf{u}$ are learnable functions, the summation happens over the neighbours of node $i$, and $\nu$ is a hyper-parameter corresponding to the maximum body order minus one, i.e. the maximum number of neighbours used for construction of the message for node $i${{<citenote 27>}}.
+
+With this understanding of MACE's theoretical foundations, I will cover the next crucial encoder implementation step. I needed to decide how to construct an appropriate graph representation of protein structures.
+
+### Graph Construction  
+
+For the MACE encoder to process protein structures effectively, I needed to transform the sequential backbone representation into an appropriate graph format. The graph construction strategy involved several design decisions that balanced computational efficiency with chemical realism.
+
+I chose to represent each protein residue as a single node positioned at its C<sub>α</sub> atom. This choice is well-motivated from a structural biology perspective and is a common option in protein modelling. Being the center atoms of each amino acid ([fig. 2](#fig:protein-backbone)), they form the backbone of the protein and capture the overall fold geometry. On top of that, they serve as origins of the frames of the backbone parametrization used in FoldFlow-2. This abstraction reduced computational complexity while preserving the essential geometric information.
+
+To capture both local and non-local interactions crucial for protein folding, I used two complementary methods. First, I connected all nodes within a radius of $5 \mathring{A}$. This distance threshold captures direct physical interactions and is often used as it covers typical ranges for hydrogen bonds and van der Waals contacts. To ensure no nodes remained disconnected, which could happen for residues in extended or disordered regions, I connected the remaining nodes, following the standard kNN approach. This guaranteed full graph connectivity and added potentially helpful long-distance edges, offering the way to model non-local interactions.
+
+To prevent computational explosion for large proteins, I capped the maximum number of edges using a constant $E_{max}$ calculated as the ratio between the number of edges of a complete graph (equal to $N^2$ for $N$ residues) and a practical upper bound.
+
+### Chapter Summary
+
+Overall, integrating the MACE-based encoder proved to be a valuable experiment. Not only did it provide a hands-on opportunity to work with a state-of-the-art equivariant GNN, but I was able to gain theoretical knowledge of mathematics underying architectures of equivariant GNNs. In the next chapter, I will detail the full training process and demonstrate a comprehensive evaluation of the final models, bringing this post to its conclusion.
+
+## Results
+
+After implementing the MACE-enhanced FoldFlow-2 architecture, I trained both the original and modified versions on a curated dataset of high-quality protein structures to evaluate the impact of my SE(3)-equivariant GNN addition. 
+
+The training process involved several key decisions regarding dataset preparation, computational resources, and evaluation metrics that would allow for a fair comparison between the baseline and augmented models. In this chapter, I'll present the training methodology, quantitative results, and qualitative analysis of the generated protein structures, demonstrating both the successes and limitations of my architectural modifications. The evaluation encompasses multiple dimensions of protein quality, including structural validity, diversity, and designability—the three pillars that define success in generative protein modeling.
+
+
+
+
 
 {{< references >}}
 <li id="ref-1">Goodsell, Dutta, <a href="http://doi.org/10.2210/rcsb_pdb/mom_2003_5">Molecule of the month</a>, 2003. <a href="javascript:goBackToLastCitation('1')">↩</a></li>
@@ -253,10 +337,10 @@ To wrap up this chapter, let me summarize the key aspects of FoldFlow-2 that I'v
 <li id="ref-22"><a href="https://en.wikipedia.org/wiki/Transportation_theory_(mathematics)">Transportation theory</a>, Wikipedia. <a href="javascript:goBackToLastCitation('22')">↩</a></li>
 <li id="ref-23">Vaswani et. al., <a href="https://arxiv.org/abs/1706.03762">Attention is all you need.</a>. NIPS, 2017 <a href="javascript:goBackToLastCitation('23')">↩</a></li>
 <li id="ref-24">Jumper et. al., <a href="https://www.nature.com/articles/s41586-021-03819-2#Sec20">Supplementary information for AlphaFold-2</a>. Nature, 2021 <a href="javascript:goBackToLastCitation('24')">↩</a></li>
-<li id="ref-25">Lin et. al., <a href="https://www.science.org/doi/10.1126/science.ade2574">Evolutionary-scale prediction of atomic-level protein structure with a language model</a>. Science, 2023 <a href="javascript:goBackToLastCitation('25')">↩</a></li>
+<li id="ref-25">Lin et. al., <a href="https://www.science.org/doi/10.1126/science.ade2574">Evolutionary-scale prediction of atomic-level protein structure with a language model</a>. Science, 2023<a href="javascript:goBackToLastCitation('25')">↩</a></li>
+<li id="ref-26">Chen et. al., <a href="https://arxiv.org/abs/2208.04202">Analog bits: generating discrete data using Diffusion models with Self-Conditioning</a>. ICLR, 2023 <a href="javascript:goBackToLastCitation('26')">↩</a></li>
+<li id="ref-27">Batatia et. al., <a href="https://arxiv.org/abs/2206.07697">MACE: higher order equivariant message passing neural networks for fast and accurate force fields</a>.<br> NIPS, 2022 <a href="javascript:goBackToLastCitation('27')">↩</a></li>
+<li id="ref-28">Thomas et. al., <a href="https://arxiv.org/abs/1802.08219">Tensor field networks: rotation- and translation-equivariant neural networks for 3D point clouds</a>. NIPS, 2018 <a href="javascript:goBackToLastCitation('28')">↩</a></li>
+<li id="ref-29"><a href="https://en.wikipedia.org/wiki/Spherical_harmonics">Spherical harmonics</a>, Wikipedia. <a href="javascript:goBackToLastCitation('29')">↩</a></li>
+<li id="ref-390"><a href="https://en.wikipedia.org/wiki/Wigner_D-matrix">Wigner D-matrix</a>, Wikipedia. <a href="javascript:goBackToLastCitation('30')">↩</a></li>
 {{< /references >}}
-
-
-
-
-

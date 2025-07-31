@@ -212,6 +212,18 @@
   counter-reset: none;
 }
 
+/* Remove decorative borders from homepage headers */
+.homepage-content h1,
+.homepage-content h2,
+.homepage-content h3,
+.homepage-content h4,
+.homepage-content h5,
+.homepage-content h6 {
+  border-inline-start: none !important;
+  margin-inline-start: 0 !important;
+  padding-inline-start: 0 !important;
+}
+
 /* Disable autonumbering for about page */
 .about-content {
   counter-reset: none;
@@ -228,6 +240,18 @@
 .about-content h4 {
   counter-increment: none;
   counter-reset: none;
+}
+
+/* Remove decorative borders from about page headers */
+.about-content h1,
+.about-content h2,
+.about-content h3,
+.about-content h4,
+.about-content h5,
+.about-content h6 {
+  border-inline-start: none !important;
+  margin-inline-start: 0 !important;
+  padding-inline-start: 0 !important;
 }
 
 /* Fix Recent Posts header color for dark mode */
@@ -412,4 +436,51 @@
   .timeline-item {
     gap: 1rem;
   }
+}
+
+/* Styling for posts section content */
+.posts-content {
+  counter-reset: none;
+  font-size: 1.8rem;
+  line-height: 1.6;
+  color: var(--card-text-color-main);
+}
+
+.posts-content h2::before,
+.posts-content h3::before,
+.posts-content h4::before {
+  content: none;
+}
+
+.posts-content h2,
+.posts-content h3,
+.posts-content h4 {
+  counter-increment: none;
+  counter-reset: none;
+  color: var(--card-text-color-main);
+}
+
+/* Remove decorative borders from posts page headers */
+.posts-content h1,
+.posts-content h2,
+.posts-content h3,
+.posts-content h4,
+.posts-content h5,
+.posts-content h6 {
+  border-inline-start: none !important;
+  margin-inline-start: 0 !important;
+  padding-inline-start: 0 !important;
+}
+
+.posts-content p {
+  color: var(--card-text-color-main);
+  margin: 1em 0;
+}
+
+.posts-content a {
+  color: var(--accent-color);
+}
+
+.posts-content a:hover {
+  color: var(--accent-color-darker);
 }

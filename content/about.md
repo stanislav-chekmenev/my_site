@@ -1,11 +1,9 @@
 +++
 title = 'About'
-date = 2025-07-01T16:54:32+02:00
 draft = false
 layout = 'about'
+readingTime = false
 +++
-
-# About Me
 
 I'm **Stanislav Chekmenev**, a machine learning specialist & educator. My professional path led me through particle physics research to cutting-edge ML applications, with a current focus on symmetry-aware models and generative ML for protein design. I hold a **PhD in Physics** from RWTH Aachen University, where I specialized in spin dynamics simulations of subatomic particles. With this solid background in math and physics, I smoothly transitioned to machine learning after my defense.
 

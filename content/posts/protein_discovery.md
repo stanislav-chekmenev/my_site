@@ -8,7 +8,7 @@ draft = false
 
 # Transitioning to Bio ML: <br> My Experience Learning and Modifying FoldFlow-2
 
-**Still a draft and not fully finished! I'm working on the last 2 chapters, so feel free to come back here around the middle of August, 2025**
+**Still a draft and not fully finished! I'm working on the last 2 chapters, so feel free to come back around the middle of August, 2025**
 
 <div style="text-align: center; margin: 2em 0;">
     <img src="/img/protein_discovery/protein-generation.gif" 

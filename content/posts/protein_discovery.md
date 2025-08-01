@@ -311,7 +311,15 @@ To prevent computational explosion for large proteins, I capped the maximum numb
 
 Overall, integrating the MACE-based encoder proved to be a valuable experiment. First, it provided a practical experience in working with a state-of-the-art equivariant GNN and, secondly, I was able to get theoretical knowledge of math foundations of similar models. In the next chapter, I will detail the full training process and demonstrate a comprehensive evaluation of the final models, bringing this post closer to its conclusion.
 
-## Results
+## Results and Insights
+
+After months of going over and over the papers that cover the theoretical part (I really wanted to understand everything), I was ready to implement my architectural modifications. It took me a solid 1-1.5 months to study and fully grasp the codebase. It was especially tedious to find my way around the initial data preparation part, since it has many innovations introduced in AlphaFold-2, such as the backbone parametrization, and, to be honest, it's not an easy code to read. For the most part, the code is well-structured, pretty clean, and has helpful comments in most of the places where a comment should be. 
+
+Initially, I just ran FoldFlow-1 on one protein structure and went through it step by step in the debugger to see what was going on. Then I switched to FoldFlow-2 and soon enough was able to start modifying its architecture. When I finished implementing my additional MACE-based encoder, I ran a few preliminary debugging runs on a tiny batch of two short proteins, consisting of 60 amino acids each. The runs indicated good training convergence for both models, the base FoldFlow-2 and my augmented version, which I'll call *FoldFlow-MACE* for simplicity. However, they couldn't demonstrate any difference in the results, so I was eager to start a full-scale training. Let me write some information about the setup, which will be important when I come to the interpretation of the results.
+
+### Training Details
+
+I was lucky to get access to a small cluster that had 8 H100 80Gb GPUs, but limited time for experimentation. Therefore, to speed up the process I decided to train both models only on the subset of the PDB structures, ranging in length between 200 and 300 amino acid residues. This choice definitely played its role in the final results, makin
 
 **to be continued, come back around the middle of August, 2025**
 

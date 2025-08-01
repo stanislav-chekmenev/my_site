@@ -484,3 +484,25 @@
 .posts-content a:hover {
   color: var(--accent-color-darker);
 }
+
+/* Custom avatar styling to fix squished appearance */
+.site-avatar {
+  --sidebar-avatar-size: 180px; /* Increase from default 100px */
+}
+
+.site-avatar .site-logo {
+  object-fit: cover; /* This ensures the image covers the full area without distortion */
+  object-position: center; /* Centers the image within the container */
+}
+
+/* Responsive avatar sizes */
+@media (min-width: 1536px) { /* 2xl screens */
+  .site-avatar {
+    --sidebar-avatar-size: 260px; /* Increase from default 120px */
+  }
+}
+
+/* Keep compact mode smaller but still larger than default */
+.left-sidebar.compact .site-avatar {
+  --sidebar-avatar-size: 110px; /* Increase from default 80px */
+}

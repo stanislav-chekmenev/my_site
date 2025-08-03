@@ -2,7 +2,6 @@
 /resources/
 /node_modules/
 .DS_Store
-/assets/img/
 /assets/jsconfig.json
 /excalidraw/
 /static/img/protein_discovery/all_drawings.odg

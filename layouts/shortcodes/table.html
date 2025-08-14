@@ -1,0 +1,8 @@
+<div class="table-block" {{ with .Get "id" }}id="{{ . }}"{{ end }}>
+  <div class="table-container">
+    {{ .Inner | markdownify }}
+  </div>
+  {{ with .Get "caption" }}
+    <figcaption class="table-caption">{{ . }}</figcaption>
+  {{ end }}
+</div>

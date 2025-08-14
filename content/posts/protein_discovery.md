@@ -8,8 +8,6 @@ draft = false
 
 # Transitioning to Bio ML: <br> My Experience Learning and Modifying FoldFlow-2
 
-**Still a draft and not fully finished! I'm working on the last 2 chapters, so feel free to come back around the middle of August, 2025**
-
 <div style="text-align: center; margin: 2em 0;">
     <img src="/img/protein_discovery/protein-generation.gif" 
          alt="Protein generation" 
@@ -20,13 +18,13 @@ draft = false
 
 ## Introduction: Personal Motivation & the Road Ahead
 
-Transition phases, especially those that shape the direction of our lives, are often really tough! At least in my case, they also tend to be some of the most rewarding episodes I've gone through. Currently being in such a phase again and having reached the first milestone, I'm openning my blog and documenting my experience in this first post. 
+Transition phases, especially those that shape the direction of our lives, are often really tough! At least in my case, they also tend to be some of the most rewarding episodes I've gone through. Currently being in such a phase again and having reached the first milestone, I'm opening my blog and documenting my experience in this first post. 
 
 About a year ago, I decided to shift my career path towards Bio ML and the fascinating field of protein drug discovery. Why proteins? &mdash; you might ask. With a background in particle physics, a thirst for solving complex puzzles, and expertise in various machine learning areas, I've always been driven by the desire to engage in work that is meaningful, intellectually challenging, and beneficial to humanity. Protein design offered precisely that combination. Setting my goal to enter the field, I embarked on a learning journey that turned out to be the most demanding self-initiated research project I've undertaken so far.
 
 This post is basically me putting together all the pieces I've learned on the way that play an important role in the latest generative techniques for proteins. Here, I'll present you a deep dive, which closely follows my learning steps, into FoldFlow-2, a recent state-of-the-art model for protein structure generation. I’ll walk you through the advanced ML concepts underlying the model, document my process of understanding and modifying its architecture, and reflect on the insights and skills gained along the way. 
 
-If you've ever wondered how modern ML can be used for creation of new proteins, or if you're considering redirecting your career similarly to mine, I hope this article provides useful perspectives and practical resources. I'd be happy if it serves as a springboard for a smoother start to your own journey into the world of Bio ML. For those who want to dig deeper, I’ll provide links to upcoming focused posts where I break down each core technique powering my augmented version of FoldFlow-2. So, stay tuned, the links will be added gradually as I continue writing.
+If you've ever wondered how modern ML can be used for creation of new proteins, or if you're considering redirecting your career similarly to mine, I hope this article offers useful perspectives and practical resources. I'd be happy if it serves as a springboard for a smoother start to your own journey into the world of Bio ML. For those who want to dig deeper, I’ll provide links to upcoming focused posts where I break down each core technique powering my augmented version of FoldFlow-2. So, stay tuned, the links will be added gradually as I continue writing.
 
 ## The Promise and Challenge of Protein Drug Discovery
 
@@ -40,7 +38,7 @@ Hemoglobin's example demonstrates the sophisticated nature of protein structure 
 
 The rise of Bio ML and the phenomenal success of AlphaFold-2 marked a transformative moment in protein science. [AlphaFold-2](https://www.nature.com/articles/s41586-021-03819-2) {{<citenote 3>}} showed that deep learning could predict protein structures from amino acid sequences with high accuracy, outperforming all previous computational methods. This accelerated the adoption of machine learning techniques to the protein discovery problem. One of the latest outstanding results is a [model](https://www.nature.com/articles/s41586-023-05993-x) {{<citenote 4>}} that designed a protein binder for receptors of COVID-19.
 
-Then it got even more interesting. Generative models emerged as a powerful tool in protein design, capable of generating entirely new realistic protein sequences. Among these novel approaches, [FoldFlow-2](https://arxiv.org/abs/2405.20313) {{<citenote 5>}} caught my attention for a number of reasons. First of all, it leverages several cutting-edge methods that I wanted to learn because some are already used in many other protein discovery models and others offer significant improvements over current baselines. Flow matching on the SE(3) group manifold, Optimal Transport theory, protein LLMs, and some AlphaFold-2 innovations like Invariant Point Attention define the FoldFlow-2 architecture. I was genuinely eager to dive into that knowledge. Secondly, despite the model being rather complex, it doesn't have an extremely large codebase or require weeks of GPU runtime to train. Considering all this, I chose FoldFlow-2, since I was also interested in modifying its architecture and experimenting with some SE(3)-equivariant tensor field Graph Neural Networks (GNNs), which were on my study list too.
+Then it got even more interesting. Generative models emerged as a powerful tool in protein design, capable of generating entirely new realistic protein sequences. Among these novel approaches, [FoldFlow-2](https://arxiv.org/abs/2405.20313) {{<citenote 5>}} caught my attention for a number of reasons. First of all, it leverages several cutting-edge methods that I wanted to learn because some are already used in many other protein discovery models and others offer significant improvements over current baselines. Flow Matching on the SE(3) group manifold, Optimal Transport theory, protein LLMs, and some AlphaFold-2 innovations like Invariant Point Attention define the FoldFlow-2 architecture. I was genuinely eager to dive into that knowledge. Secondly, despite the model being rather complex, it doesn't have an extremely large codebase or require weeks of GPU runtime to train. Considering all this, I chose FoldFlow-2, since I was also interested in modifying its architecture and experimenting with some SE(3)-equivariant tensor field Graph Neural Networks (GNNs), which were on my study list too.
 
 In the next chapters, I’ll unpack the essential machine learning innovations that underpin FoldFlow-2, share my experience of dissecting and familiarizing myself with its architecture, and detail my attempts at improving upon its already impressive capabilities.
 
@@ -48,7 +46,7 @@ In the next chapters, I’ll unpack the essential machine learning innovations t
 
 Although most people in the ML community are now familiar with AlphaFold models and their revolutionary success in structure prediction, there's a new wave of research that focuses on generative models that can design entirely new protein structures. Following that wave, [Dreamfold](https://www.dreamfold.ai/) {{<citenote 6>}} team has developed FoldFlow-2. It's a recent state-of-the-art $\text{SE}(3)^N$-invariant generative model for protein backbone generation that is additionally conditioned on the sequences of amino acids. As the name suggests, this architecture builds on top of [FoldFlow](https://arxiv.org/abs/2310.02391) ({{<citenote 7>}}) and implements a novel mechanism of handling multi-modal data, resulting in a substantial performance gain over the original version. 
 
-Several successful attempts to create generative models ([RDM](https://dl.acm.org/doi/10.5555/3600270.3600469) {{<citenote 8>}}, [RFDiffusion](https://www.nature.com/articles/s41586-023-06415-8) {{<citenote 9>}}, [FrameDiff](https://arxiv.org/abs/2302.02277) {{<citenote 10>}}), operating on Riemannian manifolds, had been published before FoldFlow was released in 2024. Some required pretraining on prediction of protein structure (RFDiffusion), others used approximations to compute Riemannian divergence in the objective (RDM) and all of them relied on the Stochastic Differential Equations as the theoretical base for modelling the diffusion process on the manifold, which assumes a non-informative source (prior) distribution that one uses for training. FoldFlow was one of the first models that introduced SE(3) [Conditional Flow Matching](https://arxiv.org/abs/2210.02747) {{<citenote 11>}} for generation of a protein backbone with a possibility to use an informative prior distribution, and it utilized Riemannian [Optimal Transport](https://arxiv.org/abs/2302.00482) {{<citenote 12>}} to speed up training.
+Several successful attempts to create generative models ([RDM](https://dl.acm.org/doi/10.5555/3600270.3600469) {{<citenote 8>}}, [RFDiffusion](https://www.nature.com/articles/s41586-023-06415-8) {{<citenote 9>}}, [FrameDiff](https://arxiv.org/abs/2302.02277){{<citenote 10>}}), operating on Riemannian manifolds, had been published before FoldFlow was released in 2024. Some required pretraining on prediction of protein structure (RFDiffusion), others used approximations to compute Riemannian divergence in the objective (RDM) and all of them relied on the Stochastic Differential Equations as the theoretical base for modelling the diffusion process on the manifold, which assumes a non-informative source (prior) distribution that one uses for training. FoldFlow was one of the first models that introduced SE(3) [Conditional Flow Matching](https://arxiv.org/abs/2210.02747){{<citenote 11>}} for generation of a protein backbone with a possibility to use an informative prior distribution, and it utilized [minibatch Optimal Transport]("https://arxiv.org/abs/2302.00482"){{<citenote 12>}} to speed up training.
 
 Generation of proteins from scratch is a much harder problem than predicting its 3D structure. A model should create proteins that are designable, different to the ones found in the training set and diverse. It's not only difficult to build such models, but it's also not easy to adequately assess their performance (more on this in the following sections). A multi-modal architecture of FoldFlow-2 is definitely a step forward that offers improvements across all three metrics that researchers use for evaluation. To fully grasp FoldFlow-2’s approach, let’s first cover some theoretical preliminaries and talk about the core ML techniques proposed by the authors of the paper.
 
@@ -65,13 +63,13 @@ A backbone consists of repeated  N&mdash;C$\_{\alpha}$&mdash;C&mdash;O four heav
 <div id="eq:idealised2coords"></div>
 $$[N, C_{\alpha}, C, O]^i = x^{i} \cdot [N^{\star}, C^{\star}_{\alpha}, C^{\star}, O^{\star}] \tag{1}$$ 
 
-As shown in [Eq. 1](#eq:idealised2coords), each residue transformation can be decomposed into two components $x^i=(r^i, s^i)$ where $r^i \in \text{SO}(3)$ is a $3 \times 3$ rotation matrix and $s^i \in \mathbb{R^3}$ is a three-dimensional translation vector. Thus, following AlphaFold-2's approach, the entire structure of a protein with N residues is parameterized by a sequence of N such transformations described by the product group $\text{SE}(3)^N$. This results in a representation of all heavy atoms of the protein given by the tensor $X \in \mathbb{R}^{N \times 4 \times 3}$. Additionally, in order to compute the coordinates of the backbone oxygen in frame $i$, one needs to apply a rotation around C$\_{\alpha}$&mdash;C bond by a torsion angle $\psi^i$. 
+As shown in [Eq. 1](#eq:idealised2coords), each residue transformation can be decomposed into two components $x^i=(r^i, s^i)$ where $r^i \in \text{SO}(3)$ is a $3 \times 3$ rotation matrix and $s^i \in \mathbb{R^3}$ is a three-dimensional translation vector. Thus, following AlphaFold-2's approach, the entire structure of a protein with N residues is parameterized by a sequence of N such transformations described by the product group $\text{SE}(3)^N$. This results in a representation of all heavy atoms of the protein given by a tensor $X \in \mathbb{R}^{N \times 4 \times 3}$. Additionally, in order to compute the coordinates of the backbone oxygen in frame $i$, one needs to apply a rotation around C$\_{\alpha}$&mdash;C bond by a torsion angle $\psi^i$. 
 
-The final rotation matrix $r^i$ for each residue is obtained via the Gram-Schmidt algorithm{{<citenote 3>}}. This procedure operates on two vectors built from backbone atom coordinates, enforcing orthonormality to output a valid rotation ^matrix centered on the C$_{\alpha}$ atom. Further details of this parametrization are well documented in the appendix of the [FrameDiff](https://arxiv.org/abs/2302.02277) paper. 
+The final rotation matrix $r^i$ for each residue is obtained via the Gram-Schmidt algorithm{{<citenote 3>}}. This procedure operates on two vectors built from backbone atom coordinates, enforcing orthonormality to output a valid rotation ^matrix centered on the C$_{\alpha}$ atom. Further details of this parametrization are well documented in the appendix of the FrameDiff{{<citenote 10>}} paper. 
 
 So, one way to model a protein is to associate an element of $\text{SE}(3)$, called a "rigid" for simplicity, to each residue in the chain. This representation is used as the "structure" modality of the model. 
 
-The second modality represents a protein as a sequence of 20 possible one-hot encoded amino acids. This is a usual way to tokenize data in protein language models. Then, the whole protein sequence is provided by a tensor $A \in \mathbb{R}^{N \times 20}$.
+The second modality represents a protein as a sequence of 20 possible one-hot encoded amino acids. This is a usual way to tokenize data in protein language models. Then, the whole protein sequence is written as a tensor $A \in \mathbb{R}^{N \times 20}$.
 
 Before moving on, let me briefly write what exactly the SE(3) group is and why it's the natural choice for describing protein structures.
 
@@ -85,12 +83,12 @@ Next, I'll discuss how this group formalism enables the creation of flows on the
 
 ### Conditional Flow Matching on the $\text{SE}(3)$ Manifold
 
-In the previous subsection, I mentioned that Lie groups are smooth manifolds, a property that allows them to be equipped with a [Riemannian metric](https://en.wikipedia.org/wiki/Riemannian_manifold#Definition) {{<citenote 16>}}, which makes it possible to define distances, angles and [geodesics](https://en.wikipedia.org/wiki/Geodesic){{<citenote 17>}} on the manifold. For $\text{SE}(3)$, the metric decomposes into separate metrics for its constituent subgroups: $\text{SO}(3)$ and $\mathbb{R}^3$ {{<citenote 7>}}. The decomposition of the $\text{SE}(3)$ group into its subgroups allows to construct independent flows for rotations and translations, which can then be combined to create a unified flow on $\text{SE}(3)$. Flow matching {{<citenote 11>}} techniques for Euclidean spaces like $\mathbb{R}^3$ are well-studied and you can find an excellent introduction in this [post](https://mlg.eng.cam.ac.uk/blog/2024/01/20/flow-matching.html){{<citenote 18>}}. So, I'll focus on the key aspects of flow matching specifically for the rotation group $\text{SO}(3)$.
+In the previous subsection, I mentioned that Lie groups are smooth manifolds, a property that allows them to be equipped with a [Riemannian metric](https://en.wikipedia.org/wiki/Riemannian_manifold#Definition) {{<citenote 16>}}, which makes it possible to define distances, angles and [geodesics](https://en.wikipedia.org/wiki/Geodesic){{<citenote 17>}} on the manifold. For $\text{SE}(3)$, the metric decomposes into separate metrics for its constituent subgroups: $\text{SO}(3)$ and $\mathbb{R}^3$ {{<citenote 7>}}. The decomposition of the $\text{SE}(3)$ group into its subgroups allows to construct independent flows for rotations and translations, which can then be combined to create a unified flow on $\text{SE}(3)$. Flow Matching{{<citenote 11>}} techniques for Euclidean spaces like $\mathbb{R}^3$ are well-studied and you can find an excellent introduction in this [post](https://mlg.eng.cam.ac.uk/blog/2024/01/20/flow-matching.html){{<citenote 18>}}. So, I'll focus on the key aspects of Flow Matching specifically for the rotation group $\text{SO}(3)$.
 
 
-#### Metrics and Distances on $\text{SE}(3)$
+#### Metric and Distance on $\text{SE}(3)$
 
-Before diving into the flow matching framework, let me establish the notion of a metric and show the distance for the $\text{SE}(3)$ group, which we can conveniently split into two components, $\text{SO}(3)$ and $\mathbb{R}^3$. A usual choice for the metric on $\text{SO}(3)$ is:
+Before diving into the Flow Matching framework, let me establish the notion of a metric and show the distance for the $\text{SE}(3)$ group, which we can conveniently split into two components, $\text{SO}(3)$ and $\mathbb{R}^3$. A usual choice for the metric on $\text{SO}(3)$ is:
 
 <div id="eq:so3-metric"></div>
 $$\langle \mathfrak{r_1}, \mathfrak{r_2} \rangle_\text{SO}(3) = \frac{1}{2} \text{tr}(\mathfrak{r_1}^T, \mathfrak{r_2}) \tag{2},$$
@@ -115,7 +113,7 @@ The map $\psi_t$ is the solution to the ordinary differential equation (ODE), [e
 <div id="eq:ode"></div>
 $$\frac{d \psi_t}{dt} = u_t(\psi_t(r)) \tag{4}$$
 ​
-The dynamics of this flow are governed by a velocity field, $u_t: [0,1] \times \text{SO}(3) \to T_{r_t}\text{SO}(3)$, that lies in the tangent space $T_{r_t}\text{SO}(3)$ at point $r_t = \psi_t(r)$. This means the velocity field $u_t$ assigns a tangent vector to each point on the manifold. Therefore, for any rotation $r$, the velocity $u_t(r) \in T_{r_t}$ is a vector in the tangent space at that point, describing the instantaneous direction and magnitude of the flow. In simpler terms, you can view this vector field as the guide that provides precise instructions for every single point at every single moment in time of how to move in order to morph the whole initial probability density $rho_0$ into the target one, $rho_1$.
+The dynamics of this flow are governed by a velocity field, $u_t: [0,1] \times \text{SO}(3) \to T_{r_t}\text{SO}(3)$, that lies in the tangent space $T_{r_t}\text{SO}(3)$ at point $r_t = \psi_t(r)$. This means the velocity field $u_t$ assigns a tangent vector to each point on the manifold. Therefore, for any rotation $r$, the velocity $u_t(r) \in T_{r_t}$ is a vector in the tangent space at that point, describing the instantaneous direction and magnitude of the flow. In simpler terms, you can view this vector field as the guide that provides precise instructions for every single point at every single moment in time of how to move in order to morph the whole initial probability density $\rho_0$ into the target one, $\rho_1$.
 
 Now that I explained how probability paths and flows work on the $\text{SO}(3)$ manifold, let's see how FoldFlow-2 leverages these concepts to formulate its training objective. 
 
@@ -123,9 +121,9 @@ Now that I explained how probability paths and flows work on the $\text{SO}(3)$ 
 
 #### From Conditional Flow Matching to the Optimization Objective
 
-The main task of the model is to generate realistic and novel proteins, which are parametrized by the product group $\text{SE}(3)^N$. One way to train such a model is by using the Conditional Flow Matching {{<citenote 11>}} technique. Focusing on the rotation ($\text{SO}(3)$) component of the objective, let me shed some light upon the main idea of this approach.
+The main task of the model is to generate realistic and novel proteins, which are parametrized by the product group $\text{SE}(3)^N$. One way to train such a model is by using the Conditional Flow Matching{{<citenote 11>}} technique. Focusing on the rotation ($\text{SO}(3)$) component of the objective, let me shed some light upon the main idea of this approach.
 
-The idea of conditional flow matching is to fit a conditional velocity field $u_t(r_t| r_0, r_1)$ in the tangent space $T_{r_t}\text{SO}(3)$ associated with the flow $\psi_t$ that smoothly transports the data distribution $r_0 \sim \rho_0$ to the source distribution $r_1 \sim \rho_1$. The unconditional vector field, the marginal velocity field over all possible endpoint pairs, is intractable to compute directly. Therefore, the model learns a conditional vector field $u_t(r_t| r_0, r_1)$, which is conditioned on the specific start ($r_0$) and end ($r_1$) points of the trajectory. Once we have access to this vector field, we can sample from $\rho_1$ and use a simple ODE solver to run the reverse process, generating a protein that resembles those found in the data distribution $\rho_0$. This generative technique can trace its roots back to the influential paper on [Neural ODEs](https://arxiv.org/abs/1806.07366){{<citenote 19>}} where the authors introduced continuous normalizing flows. I recommend reading it to those unfamiliar with the topic, since it provides foundational concepts that simplify the understanding of flow matching.
+The idea of Conditional Flow Matching is to fit a conditional velocity field $u_t(r_t| r_0, r_1)$ in the tangent space $T_{r_t}\text{SO}(3)$ associated with the flow $\psi_t$ that smoothly transports the data distribution $r_0 \sim \rho_0$ to the source distribution $r_1 \sim \rho_1$. The unconditional vector field, the marginal velocity field over all possible endpoint pairs, is intractable to compute directly. Therefore, the model learns a conditional vector field $u_t(r_t| r_0, r_1)$, which is conditioned on the specific start ($r_0$) and end ($r_1$) points of the trajectory. Once we have access to this vector field, we can sample from $\rho_1$ and use a simple ODE solver to run the reverse process, generating a protein that resembles those found in the data distribution $\rho_0$. This generative technique can trace its roots back to the influential paper on [Neural ODEs](https://arxiv.org/abs/1806.07366){{<citenote 19>}} where the authors introduced continuous normalizing flows. I recommend reading it to those unfamiliar with the topic, since it provides foundational concepts that simplify the understanding of Flow Matching.
 
 The authors of FoldFlow-2 follow the strategy developed in the previous version of the model{{<citenote 7>}} that constructs a flow $\psi_t$, connecting $r_0$ and $r_1$, by utilizing the geodesic between these points. A geodesic that connects two points is the shortest path between them on a manifold. For a general manifold, including $\text{SO}(3)$, the geodesic interpolant between $r_0$ and $r_1$, indexed by $t$, is given by the following equation:
 
@@ -168,12 +166,12 @@ The computation of the conditional vector field leverages the group structure ra
 
 Finally, I'm ready to write down the full loss of FoldFlow-2, where the translational part is derived similarly to the rotational component. You can check the suggested [post](https://mlg.eng.cam.ac.uk/blog/2024/01/20/flow-matching.html){{<citenote 18>}} for further details.
 
-<div id="eq:loss-so3"></div>
+<div id="eq:loss-so3-r3"></div>
 $$ \mathcal{L} = \mathcal{L}_{\text{SO}(3)} + \mathcal{L}_{\mathbb{R}^3} = \mathbb{E}_{t \sim \mathcal{U}[0,1], q(x_0, x_1), \rho_t(x_t|x_0, x_1, \bar{a})} \left\| v_\theta(t, r_t, \bar{a}) - \log_{r_t}(r_0) / t \right\|^2_{\text{SO}(3)} + \left\| v_\theta(t, s_t, \bar{a}) - \frac{s_t - s_0}{t} \right\| ^2_2 \tag{10}$$
 
 where $t$ is sampled uniformly from $\mathcal{U}[0,1]$, the neural network's prediction $v_{\theta} \in T_{r_t}\text{SO}(3)$ is in the tangent space at $r_t$, the norm is induced by the metric on $\text{SO}(3)$ and $q(r_0, r_1)$ is any coupling between samples from the data and source distributions. On top of the rotations $r_t$ and translations $s_t$ the model's input includes the sequence of amino acids $\bar{a}$, which is masked 50% of the time during training. This masking allows for unconditional generation of proteins when the sequence is not known or assumed.
 
-As we see from [eq. 10](eq:loss-so3), the neural network directly predicts a vector field, which we then regress on the target vector field corresponding to the geodesic ([eq. 5](#eq:geo-interpolant)) and Euclidean ([eq. 4](#eq:euclid-interpolant)) interpolants.
+As we see from [eq. 10](eq:loss-so3-r3), the neural network directly predicts a vector field, which we then regress on the target vector field corresponding to the geodesic ([eq. 5](#eq:geo-interpolant)) and Euclidean ([eq. 4](#eq:euclid-interpolant)) interpolants.
 
 ### Full Training Objective 
 
@@ -186,7 +184,7 @@ $$\mathcal{L}_{bb} = \frac{1}{4N} \sum \left|\left| A_0 - \hat{A}_0 \right|\righ
 
 where $\mathbb{1}$ is the indicator function, $A^{N \times 4 \times 3}$ is the tensor of predicted backbone atom positions, $\hat{A}$ is the ground truth, and $D^{N \times N \times 4 \times 4}$ is the tensor containing all pairwise distances between four heavy atoms $a$, $b$ of the residues $i$, $j$, i.e. $D_{ijab} = \left|\left|A_{ia} - A_{jb} \right|\right\|$.
 
-The intuition behind inclusion of these auxiliary losses is that it helps the model to produce more physically plausible proteins and decrease the number of chain breaks, as well as the amount of steric clashes. Essentially, this mechanism improves the fine-grained characteristics of protein geometry. These auxiliary losses, weighted by $\lambda_{aux} = 0.25$, are only active during the initial phase of the flow, specifically when the time variable $t < 0.25$ and the fine-grained characteristics emerge. 
+The intuition behind inclusion of these auxiliary losses is that it helps the model to produce more physically plausible proteins and decrease the number of chain breaks, as well as the amount of steric clashes. Essentially, this mechanism improves the fine-grained characteristics of protein geometry. These auxiliary losses, weighted by $\lambda_{aux} = 0.25$, are only active during the later phase of the flow, specifically when the time variable $t < 0.25$ and the fine-grained characteristics emerge. 
 
 The complete loss function is therefore a weighted sum of the primary flow-matching objective and these conditional auxiliary losses:
 
@@ -195,7 +193,7 @@ $$\mathcal{L} = \mathcal{L}_{\text{SO}(3)} + \mathcal{L}_{\mathbb{R}^3} + \mathb
 
 One important remark must be stated here. FoldFlow-2 introduces Reinforced FineTuning method that modifies the final loss, however, I omit it here. The reason for that is simple: the actual training code of FoldFlow-2 is still not published fully and the reinforcmenet finetuning part is not available. Therefore, I trained the model, using the just the loss from [eq. 12](#eq:full-loss) and skipping the RL part all together.
 
-There is another vital detail hiding in the CFM loss formula ([eq. 10](#eq:loss-so3)). It's the way the samples $r_0$ and $r_1$ are coupled. An optimal choice, developed in the paper, is to set $q(r_0, r_1) = \pi(r_0, r_1)$, which is a solution of the Riemannian Optimal Transport{{<citenote 7>}} problem. Let me say a couple of words about this crucial aspect.
+There is another vital detail hiding in the CFM loss formula ([eq. 10](#eq:loss-so3-r3)). It's the way the samples $r_0$ and $r_1$ are coupled. An optimal choice, developed in the paper, is to set $q(r_0, r_1) = \pi(r_0, r_1)$, which is a solution of the Riemannian Optimal Transport{{<citenote 7>}} problem. Let me say a couple of words about this crucial aspect.
 
 ### Optimal Transport on $\text{SE}(3)$
 
@@ -226,14 +224,14 @@ To further enhance training stability and speed, FoldFlow-2 incorporates Riemann
 
 With this theoretical foundation in place, I will now examine how these concepts are implemented in FoldFlow-2's actual architecture.
 
-## Overview of the Model Architecture
+## Model Architecture
 
 The main innovation of FoldFlow-2 in comparison to the original version is the addition of a powerful sequence encoder. At a high level, FoldFlow-2 consists of three main stages that follow a typical Encoder-Processor-Decoder ([fig. 7](#fig:architecture)) deep learning paradigm:
  1. Input structure and sequence are passed to the encoder.
  2. Encoded representations are combined and processed in a multi-modal trunk.
  3. Processed representations are sent to the geometric decoder, which outputs a vector field that lies in the tangent space of the $\text{SE}(3)$ group.
 
-{{< centerimage src="/img/protein_discovery/foldflow2_architecture.svg" alt="FoldFlow-2 architecture" caption="FoldFlow-2 architecture." id="fig:architecture" >}}
+{{< centerimage src="/img/protein_discovery/foldflow2_architecture.svg" alt="FoldFlow-2 architecture" caption="FoldFlow-2 architecture. Sequence and structure are processed separately, then combined in the fusion trunk and, whose output is decoded in the geometric decoder module, producing the final vector field in the tangent space of $\text{SE}(3)$." id="fig:architecture" >}}
 
 ### Structure & Sequence Encoder
 
@@ -257,21 +255,18 @@ Finally, the structure decoder leverages the IPA transformer once more and decod
 
 ### Model Summary
 
-To wrap up this chapter, let me summarize the key aspects of FoldFlow-2's architecture that I've covered:
+To wrap up this chapter, let me summarize the key aspects of FoldFlow-2's architecture that I've covered. The model follows the standard Encoder-Processor-Decoder approach, with multi-modality supported via fusing sequence and structure representations. Many of its components are inspired by the original AlphaFold-2 algorithms, including IPA, Evoformer, and Backbone Update modules.
 
-- It follows the standard Encoder-Processor-Decoder approach.
-- Multi-modality is supported via fusing sequence and structure representations.
-- Many of its componets are inspired by the original AlphaFold-2 algorithms (IPA, Evoformer, Backbone Update).
 
-## My Modification: Rationale, Approach, and Implementation
+## My Modification: Rationale, Approach & Implementation
 
 Now, after I've talked about the theory and the architecture of FoldFlow-2, I'm ready to walk you through my hands-on experience of modifying and extending the model to deepen my understanding of it even further. I always preferred learning by doing!
 
-So, rather than only studying the model inside out, I wanted to modify its components with two key objectives. First, to potentially improve performance through architectural changes, and second, to explore in more detail equivariant Graph Neural Networks (GNNs) that are ubiquitous in the Bio ML field. I worked with GNNs in the past and I even teach a class on them. However I dind't have a lot of practical experience with the geometric equivariant GNN architectures, which are usually implemented with the [e3nn](https://e3nn.org/){{<citenote 27>}} python library. Therefore, I was particularly interested in going deeper into current geometric SOTA models. So I thought of an SE(3)-equivariant GNN addition that could be integrated as a modular component, allowing me to easily toggle it on and off, introducing minimal disruption to the base architecture.
+So, rather than only studying the model inside out, I wanted to modify its components with two key objectives. First, to potentially improve performance through architectural changes, and second, to explore in more detail equivariant Graph Neural Networks (GNNs) that are ubiquitous in the Bio ML field. I worked with GNNs in the past and I even teach a class on them. However, I didn't have a lot of practical experience with the geometric equivariant GNN architectures, which are usually implemented with the [e3nn](https://e3nn.org/){{<citenote 27>}} python library. Therefore, I was particularly interested in going deeper into current geometric SOTA models. So I thought of an SE(3)-equivariant GNN addition that could be integrated as a modular component, allowing me to easily toggle it on and off, introducing minimal disruption to the base architecture.
 
 I discussed in the previous chapter that FoldFlow-2 uses two encoders, the structure and the sequence one. The structure encoder has the IPA algorithm at its core, which modifies the standard attention by adding the dependence on distances between residues. Even though the whole backbone update rule, as well as the full encoder block, is $\text{SE}(3)$-equivariant, the distance-based method of influencing attention weights is $\text{SE}(3)$-invariant, since distance is just a scalar that doesn't change under group actions. Essentially, attention weights between residues $i$ and $j$ are assigned to be bigger if the residues get closer to each other. Unfortunately, this technique offers limited expressivity when compared to other architectures, which leverage 3D-positional information in a more "flexible" way, by constructing features that transform under actions of $\text{SE}(3)$ equivariantly.
 
-My approach was to integrate a sophisticated $\text{SE}(3)$-equivariant GNN encoder that operates directly on atomic coordinates, working alongside the existing structure and sequence encoders. I borrowed an idea from the [self-conditioning technique](https://arxiv.org/abs/2208.04202){{<citenote 28>}} that's showed good results in generative modelling. I sought to enhance FoldFlow-2's existing self-conditioning mechanism. While the original implementation simply added a distogram of binned predicted relative positions to the pair representations 50% of the time, I wanted to try out a more advanced option, hoping to get more more expressivity and overall better results.
+My approach was to integrate a sophisticated $\text{SE}(3)$-equivariant GNN encoder that operates directly on atomic coordinates, working alongside the existing structure and sequence encoders. I borrowed an idea from the [self-conditioning technique](https://arxiv.org/abs/2208.04202){{<citenote 28>}} that's showed good results in generative modelling. I sought to enhance FoldFlow-2's existing self-conditioning mechanism. While the original implementation simply added a distogram of binned predicted relative positions to the pair representations 50% of the time, I wanted to try out a more advanced option, hoping to get better expressivity and overall results.
 
 Since the model's predicted rigids (elements of $\text{SE}(3)$) contain backbone atom coordinates as their translation components, I designed a system where the model's own structural predictions from the previous step are fed to the separate GNN encoder during half of the training iterations ([Fig. 10](#fig:my-architecture)). To maintain architectural simplicity, the GNN encoder outputs only single representations that are processed through the combiner module together with the embeddings from the other two encoders. I found this approach the least invasive, though reasonable, way to incorporate an additional encoder while preserving the core architecture. By conditioning on its own predictions, the model can iteratively refine its structural outputs. This strategy has been shown to significantly improve the quality of generated samples{{<citenote 28>}}.
 
@@ -281,17 +276,19 @@ With the overall strategy defined, the next critical choice was the specific arc
 
 ### SE(3)-equivariant MACE Encoder
 
-The [MACE](https://arxiv.org/abs/2206.07697){{<citenote 29>}} architecture is a great example of a geometric equivariant tensor field network. It operates with internal features that are not just scalars but objects that transform equivariantly under group actions of $\text{SE}(3)$. Strictly speaking, MACE was built for actions of the $\text{O}(3)$ group, but since we're working with relative positions, which guarantees translational invariance, the whole model is not only $\text{SE}(3)$-equivariant, but is equivariant to 3D reflections, as well. This property is achieved by representing features according to the irreducible representations of the group $\text{O}(3)$, ensuring equivariance and aiming at more accurate modelling of physical properties of atomic environments. The foundation of this type of architecture was firts developed in the seminal paper on [Tensor Field Networks](https://arxiv.org/abs/1802.08219){{<citenote 30>}}, which I encourage you to read if you've never encountered this concept before. 
+The [MACE](https://arxiv.org/abs/2206.07697){{<citenote 29>}} architecture is a great example of a geometric equivariant tensor field network. It operates with internal features that are not just scalars but objects that transform equivariantly under group actions of $\text{SE}(3)$. Strictly speaking, MACE was built for actions of the $\text{O}(3)$ group, but since we're working with relative positions, which guarantees translational invariance, the whole model is not only $\text{SE}(3)$-equivariant, but is equivariant to 3D reflections, as well. This property is achieved by representing features according to the irreducible representations of the group $\text{O}(3)$, ensuring equivariance and aiming at more accurate modelling of physical properties of atomic environments. The foundation of this type of architecture was first developed in the seminal paper on [Tensor Field Networks](https://arxiv.org/abs/1802.08219){{<citenote 30>}}, which I encourage you to read if you've never encountered this concept before. 
 
 The main ingredient to construct MACE features is to make use of [spherical harmonics](https://en.wikipedia.org/wiki/Spherical_harmonics){{<citenote 31>}}, $Y_m^l: \mathbb{S}^2 \to \mathbb{R}$. These are functions defined on a sphere $\mathbb{S}^2$ which form an orthonomal basis, making it possible to decompose any function on a sphere into a linear combination of spherical harmonics. The second important quality of spherical harmonics is that they transform predictably (equivariantly) under rotations or, more formally, according to an action of irreducible representations of the $\text{SO}(3)$ group called [Wigner D-matrices](https://en.wikipedia.org/wiki/Wigner_D-matrix){{<citenote 32>}} ([eq. 14](#eq:rotation-under-wigner-d)).
 
+<div id="eq:rotation-under-wigner-d"></div>
 $$ (\hat{\mathcal{R}}Y_m^l)(\mathbf{x}) = \sum_{m'=-l}^{l} Y_{m'}^l(\mathbf{x}) D^l_{m'm}(R), \tag{14}$$
 
 where $\hat{\mathcal{R}}$ is the operator that acts on functions when the coordinate system is rotated by R and $D^l_{m', m}$ are the elements of the Wigner D-matrix, the $(2l+1) \times (2l+1)$  irreducible matrix representaion of order $l$ of the rotation $R$. Therefore, building features, using spherical harmonics, would facilitate desired equivariance. Unfortunately, I can't go into more detail of this fascinating and complex topic here without deviating too much from our original focus, so I'll leave it for the future in-depth post.
 
 MACE's primary innovation, however, lies in its efficient construction of higher body order messages. Unlike traditional Message Passing Neural Networks (MPNNs), which are limited to pairwise (two-body) interactions at each layer, MACE creates messages that explicitly incorporate correlations between multiple nodes simultaneously, e.g. three- and four-body interactions. This is accomplished through a clever use of tensor products, which bypasses the typical exponential computational cost associated with higher-order terms. This ability to model interactions between several neighboring atoms simultaneously has demonstrated significant gains in sample efficiency and accuracy on a number of atomic benchmark datasets{{<citenote 29>}}. The MACE variant of many-body message passing is shown below:
 
-$$m_i = \sum_{j} \mathbf{u_1}(x_i; x_j) + \sum_{j_1, j_2} \mathbf{u_2}(x_i; x_{j_1}, x_{j_2}) + ... + \sum_{j_1, ..., j_{\nu}} \mathbf{u_{\nu}}(x_i; x_{j_1}, ..., x_{j_{\nu}}), \tag{14}$$
+<div id="eq:mace-message"></div>
+$$m_i = \sum_{j} \mathbf{u_1}(x_i; x_j) + \sum_{j_1, j_2} \mathbf{u_2}(x_i; x_{j_1}, x_{j_2}) + ... + \sum_{j_1, ..., j_{\nu}} \mathbf{u_{\nu}}(x_i; x_{j_1}, ..., x_{j_{\nu}}), \tag{15}$$
 
 where $m_i$ is the message of node $i$, $x$ are the features of the nodes, $\mathbf{u}$ are learnable functions, the summation happens over the neighbours of node $i$, and $\nu$ is a hyper-parameter corresponding to the maximum body order minus one, i.e. the maximum number of neighbours used for construction of the message for node $i${{<citenote 29>}}.
 
@@ -307,19 +304,142 @@ To capture both local and non-local interactions crucial for protein folding, I 
 
 To prevent computational explosion for large proteins, I capped the maximum number of edges using a constant $E_{max}$ calculated as the fraction of the number of edges of a complete graph (equal to $N^2$ for $N$ residues).
 
-### Chapter Summary
+### Summary
 
-Overall, integrating the MACE-based encoder proved to be a valuable experiment. First, it provided a practical experience in working with a state-of-the-art equivariant GNN and, secondly, I was able to get theoretical knowledge of math foundations of similar models. In the next chapter, I will detail the full training process and demonstrate a comprehensive evaluation of the final models, bringing this post closer to its conclusion.
+Overall, integrating the MACE-based encoder proved to be a valuable experiment. First, it provided a practical experience in working with a state-of-the-art equivariant GNN and, second, I was able to get theoretical knowledge of math foundations of similar models. In the next chapter, I will detail the training process and demonstrate a comprehensive evaluation of the final models, bringing this post closer to its conclusion.
+
+### Code Availability
+
+The complete implementation of FoldFlow-MACE, including all modifications and training scripts, is available on GitHub: [https://github.com/stanislav-chekmenev/foldflow-mace](https://github.com/stanislav-chekmenev/foldflow-mace).
+
 
 ## Results and Insights
 
+After months of going over and over the papers that cover the theoretical part (I really wanted to understand everything), I was ready to implement my architectural modifications. It took me a solid 1-1.5 months to study and fully grasp the codebase. It was especially tedious to find my way around the initial data preparation part, since it has many innovations introduced in AlphaFold-2, such as the backbone parametrization, and, to be honest, it's not an easy code to read. For the most part, the code is well-structured, pretty clean, and has helpful comments in most of the places where a comment should be. 
+
+Initially, I just ran FoldFlow-1 on one protein structure and went through it step by step in the debugger to see what was going on. Then I switched to FoldFlow-2 and soon enough was able to start modifying its architecture. When I finished implementing my additional MACE-based encoder, I ran a few preliminary debugging runs on a tiny batch of two short proteins, consisting of 60 amino acids each. The runs indicated good training convergence for both models, the base FoldFlow-2 and my augmented version, which I'll call *FoldFlow-MACE* for simplicity. However, they couldn't demonstrate any difference in the results, so I was eager to start a full-scale training. Let me write some information about the setup, which will be important when I come to the interpretation of the results.
+
+### Training Details
+
+I was lucky to get access to a small cluster that had 8 H100 80Gb GPUs, but only for a limited period of time. Therefore, due to these constraints I had to find a feasible compromise between the settings that would result in the best model's performance and the ones that would fit training and experimentation into my available computational budget.
+
+#### Simplified Setup
+
+Since I wanted to test my hypothesis that the MACE-based encoder would improve the overall quality of the generated structures compared to the benchmark FoldFlow-2 model, I simplified the setup by removing some components and running training with and without my additional encoder. This approach would still produce a valid comparison between the two methods, though it would likely fail to reproduce the original paper's results.
+
+**Coupling**
+- With this goal in mind, I turned off the Optimal Transport coupling and used random pairing between samples from the data distribution $\rho_0$ and the uniform source distribution $\rho_1$.
+
+**Trunk Module**
+- The base FoldFlow-2 model had the Evoformer, composed of two transformer blocks, in place of its trunk module. I used an **identity** transformation instead, essentially eliminating the main trunk. While being fully aware that this would lead to a drop in performance, I took this step to significantly decrease the training time. Moreover, the first version of FoldFlow didn't have this component either, and yet was comparable to the state-of-the-art architectures.
+
+**Data**
+- Both models were trained exclusively on a subset of PDB structures ranging from 200 to 300 amino acid residues in length. I adopted the batching strategy from the original implementation, where each batch contained data points sampled uniformly over clusters of proteins with 30% similarity. Consequently, each batch contained different time steps (different points along the geodesic between $\rho_0$ and $\rho_1$) from one protein from a cluster. For details, see the original FoldFlow-1 paper{{<citenote 7>}}. Since the GPUs I had access to possessed twice as much memory as those used by the FoldFlow-2 authors, I doubled the effective batch size, which was determined by the square of the maximum number of protein residues. This setup could run smoothly on two H100 80Gb GPU cards with around 80-90% of utilization.
+
+All other settings followed the default ones provided by the original implementation. Let me briefly describe the configurations I used for the MACE encoder.
+
+#### MACE Configuration
+
+First and foremost, I was utterly surprised by how much GPU memory the model required. The bottleneck was in the computation of the equivariant tensor product. This process increased the memory consumption by a factor of three, so I was forced to run the training on 6 H100 GPUs.
+
+**Model**
+
+Despite the fact that I was using 6 powerful GPUs, the memory constraints still prevented me from using a large number of wide hidden layers. I ended up with two 64-dimensional hidden layers that operated with equivariant features of degree two, in other words, features that transform as degree-two spherical harmonics. The correlation order, responsible for the number of neighbours used for message construction, was set to three. A final 128-dimensional equivariant linear projection layer served as the model's head, converting hidden equivariant features into invariant scalars (features of degree zero). This step followed a standard [geometric deep learning blueprint](https://arxiv.org/abs/2104.13478){{<citenote 33>}}, where equivariance is maintained between the layers of a model, but the output is invariant. The architecture of my encoder is presented in [fig. 11](#fig:mace-arch).
+
+{{< centerimage src="/img/protein_discovery/mace_architecture.svg" alt="MACE architecture" caption="MACE encoder architecture. Each atom is initially embedded in $\mathcal{R}^{64}$. Equivariant edge features are constructed via spherical harmonics computed for each pair of connected nodes, using their relative displacements. The features are processed via the higher order equivariant message passing. Final node embeddings are 128-dimensional vectors of scalars. Note, that radial edge embeddings are omitted here for simplicity." id="fig:mace-arch">}}
+
+**Graph density**
+
+Another crucial aspect was the maximum number of edges in the graph. As I mentioned earlier, the graph was constructed dynamically, and I had to choose an appropriate upper bound on the edge count, since going for a complete graph wasn't an option here. A complete graph wouldn't fit into memory during the tensor product operation, and the amount of long-range interactions would be too large, as well. Thus, I capped the total number of edges to be around 15% of the total number of nodes squared. This limit was applied only to the radius-based graph construction step and was ignored by the kNN algorithm that ensured each node had at least one connected neighbour. 
+
+With both the baseline FoldFlow-2 model and my augmented variant configured and ready, I proceeded to train both architectures. Finally, I can compare the models and draw my conclusions.
+
+### Results
+
+Both models were trained for 200K steps, and once I observed the evaluation metrics reaching a plateau, the training was terminated. To evaluate model performance, I tracked several metrics during training, running evaluation every 5K steps.
+
+#### Training Loss Analysis
+
+FoldFlow-MACE took approximately twice as long to train. Unfortunately, I couldn't see any significant difference in the training loss plotted in [fig. 12](#fig:train-loss). The objective in [eq. 12](#eq:full-loss) is very noisy, making it difficult to interpret raw values. For clarity, I present the exponential moving average of the full loss instead.
+
+{{< centerimage src="/img/protein_discovery/train_losses.svg" alt="Train and eval plots" caption="The exponential moving average (EMA) of the sum of rotation and translation losses on the train set for FoldFlow-2 and FoldFlow-MACE." id="fig:train-loss">}}
+
+#### Evaluation Metrics
+
+The measure of model quality can be seen through the structural evaluation metrics. My primary criterion was the *TM-score* that measures similarity between two protein backbones $x_0$, $x_1 \in \text{SE}(3)^N$ according to [eq. 16](#eq:tm-score):
+
+<div id="eq:tm-score"></div>
+$$\text{TM-score}(x_0, x_1) = \text{max} \left[ \frac{1}{N_{\text{target}}} \sum_i^{N_{\text{common}}} \frac{1}{1 + \left( \frac{d_i}{d_0 N_{\text{target}}} \right)^2} \right],  \tag{16}$$
+
+where $N_{\text{target}}$ is the length of the target protein, $N_{\text{common}}$ is the length of the common sequence after 3D structural alignment, $d_i$ is the distance between four heavy atoms of the aligned structures, and $d_0 = 1.24 (N -15)^{1/3} - 1.8$ is a scaling constant that normalizes across protein lengths. The maximum is taken over all possible structural alignments. The TM-score ranges from 0 to 1, where values close to 1 indicate perfectly aligned backbones. Scores above 0.5 suggest structural similarity, while scores below 0.2 indicate unrelated proteins.
+
+Although the full loss seemed to stop improving after 100K steps, the TM-score continued to grow and stabilized around 200K steps. This behaviour underlines the importance of validation metrics. Below, I present four plots ([fig. 13](#fig:eval-metrics)) showing a small subset of evaluation metrics, including the TM-score alongside other important structural characteristics.
+
+Additionally, I paid a lot of attention to two other quantities that characterize protein quality: the average proportion of $\alpha$-helices and $\beta$-strands. Both secondary structures are observed in natural proteins, and this diversity should also be reflected in newly designed structures. Another important metric I tracked was the average ratio of valid distances between consecutive C-$\alpha$ atoms in the backbone. This distance is approximately constant in natural proteins at 3.8 $\mathring{A}$. Therefore, generated structures should also satisfy this geometric constraint.
+
+{{< centerimage src="/img/protein_discovery/eval_metrics.svg" alt="Eval metrics" caption="Evaluation metrics for generated protein structures. a) TM-score between generated and ground truth backbones. b) Average proportion of $\alpha$-helices. c) Average proportion of $\beta$-strands. d) Average fraction of valid distances between consecutive C-$\alpha$ atoms in the backbone ($\approx$ 3.8 $\mathring{A}$)." id="fig:eval-metrics">}}
+
+#### Final Evaluation via Refolding Procedure
+
+Looking at the plots shown in [fig. 13](#fig:eval-metrics), I wasn't able to conclude which model was better, but it was already clear to me that I couldn't count on a big improvement. Lastly, I ran the final evaluation, following the standard way to assess the quality of designed proteins, which is widely accepted in the literature despite its shortcomings. Let me briefly introduce you to it. It is based on the refolding procedure pictured in [fig. 14](#fig:sc-rmsd):
+
+{{< sidebysideright src="/img/protein_discovery/sc_rmsd.svg" alt="Self-consistency RMSD" caption="Computation of self-consistency RMSD." id="fig:sc-rmsd" >}}
+- First, the model generates protein structures across various lengths. I generated 50 proteins for each target length: 200, 225, 250, 275, and 300 amino acids.
+- Secondly, the ProteinMPNN model is used for inverse folding. It takes each generated structure and turns it into 8 possible amino acid sequences.
+- Thirdly, ESMFold refolds each of these sequences back into a 3D structure.
+- Finally, the root mean squared deviation is computed between the originally generated backbone and its refolded counterparts. This metric is called self-consistency RMSD and is given in [eq. 17](#eq:sc-rmsd).
+{{< /sidebysideright >}}
 
 
-**to be continued, come back around the middle of August, 2025**
+<div id="eq:sc-rmsd"></div>
+$$\text{RMSD}(x_0, x_1) = \sqrt{\sum_{i=1}^L \frac{d_i^2}{L}},  \tag{17}$$
 
-*Meanwhile, if you're interested in the code, you can find it [here](https://github.com/stanislav-chekmenev/foldflow-mace).*
+where $d_i$, exactly as in the TM-score formula ([eq. 16](#eq:tm-score)), is the distance between four heavy atoms of the $i^{th}$ residues. 
 
+The self-consistency RMSD metric forms the basis for computing three performance metrics: *designability*, *novelty*, and *diversity*. 
 
+Designability is computed as the fraction of generated proteins with scRMSD $< 2.0 \mathring{A}$. Diversity represents the structural variation, calculated as the average pairwise TM-score of all designable structures (lower is better). Novelty measures how different the generated proteins are from known structures, defined as the average fraction of designable proteins with TM-score $< 0.5$. 
+
+For both models, I present the average scRMSD alongside these three derived metrics in [table 1](#tab:eval-metrics). All averages are computed across the five protein lengths mentioned above (200, 225, 250, 275, and 300 amino acids). Since diversity is caclulated as the average pair-wise distance of designable proteins, each estimate of the mean is correlated and produces a wrong estimate of the standard error. This is the reason its not shown in the table.
+
+{{< table id="tab:eval-metrics" caption="Comparison of protein design evaluation metrics between FoldFlow-2 and FoldFlow-MACE." >}}
+|        | FoldFlow-2 | FoldFlow-MACE |
+|--------|------------|---------------|
+| Designability ($\uparrow$) | **0.240 &plusmn; 0.093** | 0.104 &plusmn; 0.026 |
+| Diversity ($\downarrow$)| 0.541 | **0.492** |
+| Novelty ($\uparrow$) | 0.0 | 0.0 |
+| scRMSD ($\downarrow, \mathring{A}$) | **5.114 &plusmn; 0.653** | 7.685 &plusmn; 0.779 |
+{{< /table >}}
+
+### Interpretations & Conclusions
+
+As anticipated, the FoldFlow‑2 model’s performance did not match the original paper’s results for several reasons. My training set consisted only of 3689 data points, around 6 times smaller than the size of the dataset used in the FoldFlow‑1 paper{{<citenote 7>}}. In addition, FoldFlow‑2 included filtered AlphaFold‑2 structures from the SwissProt dataset, bringing the total to approximately 160K data points{{<citenote 5>}}. Given the absence of the Evoformer, Optimal Transport, and RL finetuning in my setup, I was satisfied with the baseline metrics. I also attribute the zero novelty score to these same factors.
+
+Although FoldFlow-MACE’s performance on the validation metrics shown in [fig. 13](#fig:eval-metrics) was on par with the baseline, the final results presented in [table 1](#tab:eval-metrics) tell a different story. The explanation for this discrepancy likely arises from an important architectural detail interacting with the nature of the generative process and the different sensitivities of the evaluation metrics.
+
+My primary hypothesis is that the FoldFlow-MACE model underperformed due to the lack of a skip connection between the MACE encoder and the decoder module. The authors of the original paper highlighted the importance of this connection for the IPA-based encoder, and its absence for the MACE branch probably plays a big role.
+
+This architectural flaw was exacerbated by two key conditions. First, the model's C-$\alpha$ coordinate predictions, that were fed into MACE, very noisy during the early stages of generation when time $t$ is close to one. Second, the MACE-based encoder was further hindered by operating on a highly sparse graph, using only 15% of the potential edges. An encoder learning complex local physics from such an incomplete view of the atomic neighborhood is bound to produce a less reliable signal. Consequently, when MACE processed this noisy input, its feature embeddings likely contributed more "structured noise" than helpful refinement. Without a direct skip connection, this noisy signal was ineffectively integrated, while the decoder remained primarily guided by the globally-aware IPA embeddings arriving via its clean path.
+
+This explains the divergent results. The TM-score, a more forgiving metric of global topology, which can be robust to this subtle noise. As long as the IPA branch ensures the overall fold is correct, the TM-score remains high. In contrast, the scRMSD pipeline acts as a sensitive biophysical test. It failed because the structured noise brought by the MACE encoder created just enough geometric and physical implausibility to render the final structure undesignable. It's also worth noting that the scRMSD metric itself is imperfect, as it relies on the predictions of two other models, ProteinMPNN and ESMFold, which have their own inherent limitations.
+
+In conclusion, a promising strategy for improving FoldFlow-MACE would be to add the missing skip connection between the encoder and decoder and restrict MACE to the later stages of generation, similar to how auxiliary losses are applied ($t < 0.25$). However, I decided against pursuing these improvements due to the considerable GPU memory overhead that the MACE addition introduced.
+
+## Final Remarks
+
+Thank you for reading through this deep dive into protein design with $\text{SE}(3)$ Flow Matching. I hope this exploration of FoldFlow-2 and my experiments with a MACE-based encoder were helpful for you and, perhaps, could be a good place to start your own personal journey into this fascinating field.
+
+## Acknowledgements
+
+I'd like to say a big thank you to the authors{{<citenote 7>}} of the FoldFlow model family for open-sourcing their code and providing helpful notebooks with toy examples of Flow Matching on the $\text{SO}(3)$ manifold. These resources were a great starting point for diving into their codebase.
+
+I'm also grateful to the authors{{<citenote 10>}} of FrameDiff, whose code became the foundation for FoldFlow and whose data preprocessing pipeline made it possible for me to get the training data I needed.
+
+Special thanks to Antonio Rueda-Toicen, Mario Tormo and the whole KI-Servicezentrum team at Hasso Plattner Institut for helping me to get access to the computational resources that made this research possible.
+
+Finally, I should mention that this article was written with help from generative AI tools like GPT-4.1, Claude Sonnet 4, and Gemini 2.5 Pro, which helped me structure and polish the text. But all the ideas and responsibility for the content are mine. 
+
+## References & Useful Links
 
 {{< references >}}
 <li id="ref-1">Goodsell, Dutta, <a href="http://doi.org/10.2210/rcsb_pdb/mom_2003_5">Molecule of the month</a>, 2003. <a href="javascript:goBackToLastCitation('1')">↩</a></li>
@@ -339,7 +459,7 @@ Overall, integrating the MACE-based encoder proved to be a valuable experiment. 
 <li id="ref-15"><a href="https://en.wikipedia.org/wiki/Skew-symmetric_matrix">Skew-symmetric matrix</a>, Wikipedia. <a href="javascript:goBackToLastCitation('15')">↩</a></li>
 <li id="ref-16"><a href="https://en.wikipedia.org/wiki/Riemannian_manifold#Definition">Riemannian manifold</a>, Wikipedia. <a href="javascript:goBackToLastCitation('16')">↩</a></li>
 <li id="ref-17"><a href="https://en.wikipedia.org/wiki/Geodesic">Geodesic</a>, Wikipedia. <a href="javascript:goBackToLastCitation('17')">↩</a></li>
-<li id="ref-18">Fjelde, Mathieu, Dutordoir, <a href="https://mlg.eng.cam.ac.uk/blog/2024/01/20/flow-matching.html">An Introduction to Flow Matching</a>. 2024 <a href="javascript:goBackToLastCitation('18')">↩</a></li>
+<li id="ref-18">Fjelde, Mathieu, Dutordoir, <a href="https://mlg.eng.cam.ac.uk/blog/2024/01/20/flow-matching.html">An introduction to flow matching</a>. 2024 <a href="javascript:goBackToLastCitation('18')">↩</a></li>
 <li id="ref-19">Chen et. al., <a href="https://arxiv.org/abs/1806.07366">Neural Ordinary Differential Equations</a>. NIPS, 2018 <a href="javascript:goBackToLastCitation('19')">↩</a></li>
 <li id="ref-20"><a href="https://en.wikipedia.org/wiki/Axis%E2%80%93angle_representation">Axis-angle representation</a>, Wikipedia. <a href="javascript:goBackToLastCitation('20')">↩</a></li>
 <li id="ref-21"><a href="https://www.youtube.com/watch?v=k1CeOJdQQrc&ab_channel=MLinPL">A primer on optimal transport theory and algorithms</a>, Youtube. <a href="javascript:goBackToLastCitation('21')">↩</a></li>
@@ -354,4 +474,5 @@ Overall, integrating the MACE-based encoder proved to be a valuable experiment. 
 <li id="ref-30">Thomas et. al., <a href="https://arxiv.org/abs/1802.08219">Tensor field networks: rotation- and translation-equivariant neural networks for 3D point clouds</a>. NIPS, 2018 <a href="javascript:goBackToLastCitation('30')">↩</a></li>
 <li id="ref-31"><a href="https://en.wikipedia.org/wiki/Spherical_harmonics">Spherical harmonics</a>, Wikipedia. <a href="javascript:goBackToLastCitation('31')">↩</a></li>
 <li id="ref-32"><a href="https://en.wikipedia.org/wiki/Wigner_D-matrix">Wigner D-matrix</a>, Wikipedia. <a href="javascript:goBackToLastCitation('32')">↩</a></li>
+<li id="ref-33">M. Bronstein et. al.,<a href="https://arxiv.org/abs/2104.13478">Geometric deep learning: grids, groups, graphs, geodesics and gauges.</a>2021<a href="javascript:goBackToLastCitation('33')">↩</a></li>
 {{< /references >}}

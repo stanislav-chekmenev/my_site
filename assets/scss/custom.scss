@@ -34,10 +34,11 @@
 }
 
 .sidebyside-caption {
-  font-size: 0.96em;
-  margin-top: 0.2em;
+  font-size: 0.98em !important;
+  margin-top: 0.4em;
   text-align: left;
   color: var(--caption-color);
+  opacity: 0.85;
 }
 
 .custom-toc-title {
@@ -68,7 +69,7 @@
 .centerimage-caption {
   margin-top: 0.4em;
   font-size: 0.98em;
-  text-align: center;
+  text-align: left;
   color: var(--caption-color);
   opacity: 0.85;
 }
@@ -119,9 +120,21 @@
   counter-increment: figure;
 }
 
+/* Table numbering */
+.article-content .table-block {
+  counter-increment: table;
+}
+
 .article-content .centerimage-caption::before,
 .article-content .sidebyside-caption::before {
   content: "Figure " counter(figure) ": ";
+  font-weight: 600;
+  color: var(--accent-color);
+}
+
+/* Table caption numbering */
+.article-content .table-caption::before {
+  content: "Table " counter(table) ": ";
   font-weight: 600;
   color: var(--accent-color);
 }
@@ -505,4 +518,41 @@
 /* Keep compact mode smaller but still larger than default */
 .left-sidebar.compact .site-avatar {
   --sidebar-avatar-size: 110px; /* Increase from default 80px */
+}
+
+/* Table shortcode styling */
+.table-block {
+  margin: 2em auto;
+  text-align: center;
+}
+
+.table-container {
+  display: inline-block;
+  margin: 0 auto;
+}
+
+.table-container table {
+  margin: 0 auto;
+  border-collapse: collapse;
+  min-width: 300px;
+}
+
+.table-container th,
+.table-container td {
+  padding: 8px 16px;
+  border: 1px solid var(--border-color, #ddd);
+  text-align: center;
+}
+
+.table-container th {
+  background-color: var(--card-background, #f8f9fa);
+  font-weight: 600;
+}
+
+.table-caption {
+  font-size: 0.98em;
+  margin-top: 0.4em;
+  text-align: left;
+  color: var(--caption-color);
+  opacity: 0.85;
 }

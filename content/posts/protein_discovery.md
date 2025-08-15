@@ -1,5 +1,5 @@
 +++
-title = 'Diving Into Protein Design with $\text{SE}(3)$ Flow Matching'
+title = 'Diving Into Protein Design with SE(3) Flow Matching'
 date = 2025-07-31T16:00:46+02:00
 mermaid = false
 math = true
